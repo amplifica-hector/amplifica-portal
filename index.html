@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amplifica | Portal de Facturación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #141449;
+      --blue:       #2F30FF;
+      --blue-hover: #1B1CAD;
+      --yellow:     #FEDE00;
+      --white:      #FFFFFF;
+      --bg:         #F4F4F5;
+      --border:     #E5E5E6;
+      --text:       #1D1D1F;
+      --muted:      #737378;
+      --error:      #EF4444;
+      --error-bg:   #FEF2F2;
+      --radius-sm:  6px;
+      --radius-md:  8px;
+      --radius-lg:  10px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: var(--navy);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      background: var(--yellow);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-name {
+      color: var(--white);
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+
+    .header-separator {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    .header-subtitle {
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
+    .header-action {
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-exit {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.75);
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-exit:hover {
+      border-color: rgba(255,255,255,0.45);
+      color: var(--white);
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .card-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .card-body {
+      padding: 24px 28px;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 20px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, opacity 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: var(--white);
+    }
+
+    .btn-primary:not(:disabled):hover { background: var(--blue-hover); }
+
+    .btn-yellow {
+      background: var(--yellow);
+      color: var(--navy);
+      font-weight: 600;
+    }
+
+    .btn-yellow:not(:disabled):hover { background: #e8cc00; }
+
+    .btn-block { width: 100%; }
+
+    /* ── Form Elements ────────────────────────────────────────────────── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .form-input {
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input::placeholder {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .form-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(47, 48, 255, 0.1);
+    }
+
+    .form-input:disabled {
+      background: var(--bg);
+      color: var(--muted);
+    }
+
+    /* ── Spinner ──────────────────────────────────────────────────────── */
+    .spinner-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .spinner-dots {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .spinner-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: dot-bounce 1.2s ease-in-out infinite;
+    }
+
+    .spinner-dots span:nth-child(1) { animation-delay: 0s; }
+    .spinner-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .spinner-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot-bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40%            { transform: scale(1);   opacity: 1; }
+    }
+
+    /* ── Messages ─────────────────────────────────────────────────────── */
+    .msg-error {
+      font-size: 13px;
+      color: var(--error);
+      background: var(--error-bg);
+      border: 1px solid #FECACA;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    .msg-success {
+      font-size: 13px;
+      color: var(--yellow);
+      background: var(--navy);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      line-height: 1.6;
+    }
+
+    .msg-warning {
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+      background: #FFFBEB;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      line-height: 1.6;
+    }
+
+    .msg-warning-icon { flex-shrink: 0; font-size: 16px; }
+
+    /* ── Divider ──────────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── Subtle link button ───────────────────────────────────────────── */
+    .btn-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 0.15s;
+    }
+
+    .btn-link:hover { color: var(--text); }
+    .btn-link:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .regen-row {
+      text-align: center;
+    }
+
+    /* ── Document Viewer ──────────────────────────────────────────────── */
+    .doc-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 560px;
+      overflow: hidden;
+    }
+
+    .doc-header {
+      background: var(--navy);
+      padding: 20px 24px;
+    }
+
+    .doc-client {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+
+    .doc-period {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .doc-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 16px 24px 8px;
+    }
+
+    .file-list {
+      padding: 0 16px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      transition: background 0.1s;
+    }
+
+    .file-row:hover { background: var(--bg); }
+
+    .file-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .file-name {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      word-break: break-all;
+    }
+
+    .btn-download {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--blue);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .btn-download:hover {
+      background: #EBF1FF;
+      border-color: var(--blue);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .doc-footer {
+      padding: 12px 24px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .doc-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      padding: 32px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── Utility ──────────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    .gap-sm { margin-top: 12px; }
+    .gap-md { margin-top: 16px; }
+    .gap-lg { margin-top: 20px; }
+
+    /* ── ZIP overlay ──────────────────────────────────────────────────── */
+    #zip-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 20, 73, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .zip-modal {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      text-align: center;
+      width: 280px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .zip-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #E5E5E6;
+      border-top-color: #2F30FF;
+      border-radius: 50%;
+      animation: zip-spin 0.75s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes zip-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .zip-modal-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #141449;
+      margin-bottom: 6px;
+    }
+
+    .zip-modal-sub {
+      font-size: 13px;
+      color: #737378;
+    }
+
+    .zip-check {
+      font-size: 36px;
+      color: var(--blue);
+      margin-bottom: 16px;
+      line-height: 1;
+    }
+
+    #zip-ready-state .zip-modal-sub {
+      margin-bottom: 20px;
+    }
+
+    .zip-dl-btn {
+      display: flex;
+      width: 100%;
+      text-decoration: none;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .zip-cancel-btn {
+      width: 100%;
+      padding: 8px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .zip-cancel-btn:hover { color: var(--text); }
+
+    /* ── No-access view ───────────────────────────────────────────────── */
+    .no-access-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .no-access-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+
+    .no-access-admin-link {
+      margin-top: 28px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 2L14 13H2L8 2Z" fill="#141449"/>
+          </svg>
+        </div>
+        <span class="header-name">Amplifica</span>
+      </div>
+      <div class="header-separator"></div>
+      <span class="header-subtitle">Portal de Facturación</span>
+    </div>
+    <div class="header-action" id="header-exit-area"></div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ── View: No Access (default) ───────────────────────────────── -->
+    <div id="view-no-access" class="hidden">
+      <div class="no-access-wrap">
+        <div class="card">
+          <div class="card-body" style="text-align:center; padding: 44px 28px;">
+            <div class="no-access-icon">🔒</div>
+            <div class="card-title" style="margin-bottom:10px;">Acceso restringido</div>
+            <div class="card-subtitle" style="line-height:1.7; max-width:320px; margin:0 auto;">
+              No deberías estar aquí. Contacta al equipo Amplifica
+              para recibir un enlace de acceso a tu facturación.
+            </div>
+          </div>
+        </div>
+        <div class="no-access-admin-link">
+          <button class="btn-link" id="btn-show-admin"
+                  style="color:#BBBBBF; font-size:12px; text-decoration:none;">
+            Acceso administradores
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── View: Admin Code Prompt ─────────────────────────────────── -->
+    <div id="view-admin-prompt" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Modo administrador</div>
+          <div class="card-subtitle">Ingresa tu código de acceso administrativo</div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="admin-code-input">Código (6 caracteres)</label>
+            <input
+              type="text"
+              id="admin-code-input"
+              class="form-input"
+              placeholder="Ej: K4M7B2"
+              maxlength="6"
+              autocomplete="off"
+              spellcheck="false"
+              style="text-transform:uppercase; letter-spacing:0.12em; font-size:16px;"
+            >
+          </div>
+          <div class="gap-sm"></div>
+          <div id="admin-code-error" class="hidden"></div>
+          <div class="gap-sm"></div>
+          <button class="btn btn-primary btn-block" id="btn-verify-admin">
+            Verificar código
+          </button>
+          <div class="gap-sm"></div>
+          <div style="text-align:center;">
+            <button class="btn-link" id="btn-cancel-admin">← Volver</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── View: Boot Screen (admin only) ──────────────────────────── -->
+    <div id="view-boot" class="hidden">
+      <div class="card">
+
+        <!-- Loading state -->
+        <div id="boot-loading" class="card-body">
+          <div class="spinner-row">
+            <div class="spinner-dots">
+              <span></span><span></span><span></span>
+            </div>
+            Verificando estado del portal…
+          </div>
+        </div>
+
+        <!-- First-boot: no tokens.json found -->
+        <div id="boot-firstrun" class="hidden">
+          <div class="card-header">
+            <div class="card-title">Portal de Facturación</div>
+            <div class="card-subtitle">Configuración inicial requerida</div>
+          </div>
+          <div class="card-body">
+            <div class="msg-warning">
+              <span class="msg-warning-icon">⚠</span>
+              <div>
+                <strong>No se encontró ningún registro de accesos.</strong><br>
+                Genera los tokens iniciales para habilitar el acceso de los clientes.
+              </div>
+            </div>
+            <div class="gap-md"></div>
+            <div id="firstrun-generation-area"></div>
+            <div class="gap-md"></div>
+            <button class="btn btn-yellow btn-block" id="btn-firstrun-generate">
+              Generar tokens de acceso
+            </button>
+          </div>
+        </div>
+
+        <!-- Normal state: tokens.json exists -->
+        <div id="boot-normal" class="hidden">
+          <div class="card-header">
+            <div class="card-title">Ingresa un código de acceso</div>
+            <div class="card-subtitle">Ingresa o verifica un código de cliente</div>
+          </div>
+          <div class="card-body">
+            <div id="token-form-area">
+              <div class="form-group">
+                <label class="form-label" for="token-input">Código de acceso</label>
+                <input
+                  type="text"
+                  id="token-input"
+                  class="form-input"
+                  placeholder="Ej: 2026-05-abc123def456"
+                  maxlength="20"
+                  autocomplete="off"
+                  spellcheck="false"
+                >
+              </div>
+              <div class="gap-sm"></div>
+              <div id="token-error" class="hidden"></div>
+              <div class="gap-sm"></div>
+              <button class="btn btn-primary btn-block" id="btn-access">
+                Acceder
+              </button>
+            </div>
+            <div id="token-spinner" class="hidden">
+              <div class="spinner-row">
+                <div class="spinner-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                Verificando código…
+              </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="regen-row">
+              <div id="normal-generation-area" class="hidden"></div>
+              <button class="btn-link" id="btn-regen">
+                Regenerar tokens de acceso
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── View: Document Viewer ────────────────────────────────────── -->
+    <div id="view-docs" class="hidden">
+      <div class="doc-card">
+        <div class="doc-header">
+          <div class="doc-client" id="doc-client">—</div>
+          <div class="doc-period" id="doc-period">—</div>
+        </div>
+        <div class="doc-section-label">Documentos disponibles</div>
+        <div id="file-list" class="file-list"></div>
+        <div class="doc-footer">
+          <span class="doc-count" id="doc-count"></span>
+          <button class="btn btn-primary" id="btn-download-all" style="display:none; font-size:13px; height:34px; padding:0 14px;">
+            ↓ Descargar todo (.zip)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ZIP loading overlay ────────────────────────────────────────── -->
+    <div id="zip-overlay" class="hidden">
+      <div class="zip-modal">
+
+        <!-- State 1: loading -->
+        <div id="zip-loading-state">
+          <div class="zip-spinner"></div>
+          <div class="zip-modal-title">Preparando tu ZIP…</div>
+          <div class="zip-modal-sub">Esto puede tardar unos momentos.</div>
+        </div>
+
+        <!-- State 2: ready to download -->
+        <div id="zip-ready-state" class="hidden">
+          <div class="zip-check">✓</div>
+          <div class="zip-modal-title">Tu ZIP está listo</div>
+          <div class="zip-modal-sub">Haz clic para iniciar la descarga.</div>
+          <a id="zip-download-link" href="#" target="_blank" class="btn btn-primary zip-dl-btn">
+            ↓ Descargar ZIP
+          </a>
+          <button id="zip-cancel-btn" class="zip-cancel-btn">Cerrar</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Configuration ──────────────────────────────────────────────────────────────
+// Replace with your Google Apps Script /exec deployment URL
+var GAS_URL = 'TU_URL_DE_GAS_AQUI';
+
+// ── GAS API helper ─────────────────────────────────────────────────────────────
+// All calls use GET to avoid CORS preflight issues with GAS
+function gasGet(params) {
+  var parts = [];
+  var keys  = Object.keys(params);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var v = params[k];
+    if (v !== null && typeof v === 'object') v = JSON.stringify(v);
+    parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(String(v)));
+  }
+  return fetch(GAS_URL + '?' + parts.join('&'))
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+}
+
+// ── State ──────────────────────────────────────────────────────────────────────
+var state = {
+  generating: false,
+  accessing:  false
+};
+var currentDocData = null;
+
+// ── DOM references ─────────────────────────────────────────────────────────────
+var $ = function(id) { return document.getElementById(id); };
+
+var elViewNoAccess       = $('view-no-access');
+var elViewAdminPrompt    = $('view-admin-prompt');
+var elViewBoot           = $('view-boot');
+var elViewDocs           = $('view-docs');
+var elBootLoading        = $('boot-loading');
+var elBootFirstrun       = $('boot-firstrun');
+var elBootNormal         = $('boot-normal');
+var elTokenInput         = $('token-input');
+var elTokenError         = $('token-error');
+var elBtnAccess          = $('btn-access');
+var elTokenSpinner       = $('token-spinner');
+var elTokenFormArea      = $('token-form-area');
+var elBtnFirstrunGenerate = $('btn-firstrun-generate');
+var elBtnRegen           = $('btn-regen');
+var elFirstrunGenArea    = $('firstrun-generation-area');
+var elNormalGenArea      = $('normal-generation-area');
+var elHeaderExitArea     = $('header-exit-area');
+var elDocClient          = $('doc-client');
+var elDocPeriod          = $('doc-period');
+var elFileList           = $('file-list');
+var elDocCount           = $('doc-count');
+var elBtnDownloadAll     = $('btn-download-all');
+var elZipOverlay         = $('zip-overlay');
+var elZipLoadingState    = $('zip-loading-state');
+var elZipReadyState      = $('zip-ready-state');
+var elZipDownloadLink    = $('zip-download-link');
+var elZipCancelBtn       = $('zip-cancel-btn');
+var elBtnShowAdmin       = $('btn-show-admin');
+var elBtnVerifyAdmin     = $('btn-verify-admin');
+var elBtnCancelAdmin     = $('btn-cancel-admin');
+var elAdminCodeInput     = $('admin-code-input');
+var elAdminCodeError     = $('admin-code-error');
+
+// ── View switcher ──────────────────────────────────────────────────────────────
+function showView(viewId) {
+  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs'];
+  for (var i = 0; i < views.length; i++) {
+    $(views[i]).classList.add('hidden');
+  }
+  $(viewId).classList.remove('hidden');
+}
+
+// ── Boot: check URL for token, otherwise show no-access wall ──────────────────
+(function init() {
+  if (!GAS_URL || GAS_URL === 'TU_URL_DE_GAS_AQUI') {
+    showView('view-no-access');
+    elViewNoAccess.querySelector('.card-body').innerHTML =
+      '<div class="msg-error" style="text-align:left;">' +
+      '<strong>Portal no configurado.</strong><br>' +
+      'El administrador debe actualizar <code>GAS_URL</code> en el código fuente.' +
+      '</div>';
+    return;
+  }
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var urlToken  = urlParams.get('token');
+
+  if (urlToken) {
+    // Token in URL: show loading state then auto-lookup
+    showView('view-boot');
+    elBootLoading.classList.remove('hidden');
+    elBootFirstrun.classList.add('hidden');
+    elBootNormal.classList.add('hidden');
+
+    gasGet({ action: 'lookup', token: urlToken.trim().toLowerCase() })
+      .then(function(result) {
+        if (result.success) {
+          showDocumentView(result);
+        } else {
+          showView('view-no-access');
+        }
+      })
+      .catch(function() {
+        showView('view-no-access');
+      });
+  } else {
+    // No token: show the access wall
+    showView('view-no-access');
+  }
+}());
+
+// ── Admin mode ─────────────────────────────────────────────────────────────────
+
+elBtnShowAdmin.addEventListener('click', function() {
+  elAdminCodeInput.value = '';
+  elAdminCodeError.classList.add('hidden');
+  showView('view-admin-prompt');
+  setTimeout(function() { elAdminCodeInput.focus(); }, 80);
+});
+
+elBtnCancelAdmin.addEventListener('click', function() {
+  showView('view-no-access');
+});
+
+elAdminCodeInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitAdminCode();
+});
+
+elBtnVerifyAdmin.addEventListener('click', submitAdminCode);
+
+function submitAdminCode() {
+  var code = elAdminCodeInput.value.trim().toUpperCase();
+  if (code.length === 0) {
+    showAdminError('Ingresa el código de acceso.');
+    return;
+  }
+  if (code.length !== 6) {
+    showAdminError('El código debe tener exactamente 6 caracteres.');
+    return;
+  }
+
+  elBtnVerifyAdmin.disabled = true;
+  elAdminCodeError.classList.add('hidden');
+
+  gasGet({ action: 'verifyAdmin', code: code })
+    .then(function(result) {
+      elBtnVerifyAdmin.disabled = false;
+      if (result.success) {
+        enterAdminBootMode();
+      } else {
+        showAdminError(result.error || 'Código incorrecto.');
+      }
+    })
+    .catch(function() {
+      elBtnVerifyAdmin.disabled = false;
+      showAdminError('Error de red. Verifica tu conexión e intenta nuevamente.');
+    });
+}
+
+function showAdminError(msg) {
+  elAdminCodeError.className = 'msg-error';
+  elAdminCodeError.textContent = msg;
+  elAdminCodeError.classList.remove('hidden');
+}
+
+function enterAdminBootMode() {
+  showView('view-boot');
+  elBootLoading.classList.remove('hidden');
+  elBootFirstrun.classList.add('hidden');
+  elBootNormal.classList.add('hidden');
+
+  gasGet({ action: 'checkRegistry' })
+    .then(function(result) {
+      elBootLoading.classList.add('hidden');
+      if (result.hasFiles) {
+        showNormalState();
+      } else {
+        elBootFirstrun.classList.remove('hidden');
+      }
+    })
+    .catch(function() {
+      elBootLoading.innerHTML =
+        '<div class="msg-error">Error al verificar el estado del portal. Recarga la página.</div>';
+    });
+}
+
+function showNormalState() {
+  elBootFirstrun.classList.add('hidden');
+  elBootNormal.classList.remove('hidden');
+}
+
+// ── Generation flow ─────────────────────────────────────────────────────────────
+
+function startGeneration(targetArea, afterSuccessFn) {
+  if (state.generating) return;
+  state.generating = true;
+
+  elBtnFirstrunGenerate.disabled = true;
+  elBtnRegen.disabled = true;
+
+  targetArea.innerHTML =
+    '<div class="spinner-row">' +
+    '<div class="spinner-dots"><span></span><span></span><span></span></div>' +
+    'Escaneando carpetas de Drive…' +
+    '</div>';
+  targetArea.classList.remove('hidden');
+
+  gasGet({ action: 'scan' })
+    .then(function(result) { onGenerateSuccess(result, targetArea, afterSuccessFn); })
+    .catch(function(err)   { onGenerateFailure(err, targetArea); });
+}
+
+function onGenerateSuccess(result, targetArea, afterSuccessFn) {
+  state.generating = false;
+  elBtnFirstrunGenerate.disabled = false;
+  elBtnRegen.disabled = false;
+
+  if (!result.success) {
+    targetArea.innerHTML =
+      '<div class="msg-error">Error al acceder a las carpetas de Drive. Verifica los permisos del script.</div>';
+    return;
+  }
+
+  targetArea.innerHTML =
+    '<div class="msg-success">' +
+    '✓ Proceso completado — <strong>' + result.added + '</strong> tokens nuevos generados en ' +
+    '<strong>' + result.filesWritten + '</strong> archivo(s), ' +
+    '<strong>' + result.skipped + '</strong> existentes omitidos. ' +
+    'Total en registro: <strong>' + result.total + '</strong>.' +
+    '</div>';
+
+  if (afterSuccessFn) {
+    setTimeout(afterSuccessFn, 2000);
+  }
+}
+
+function onGenerateFailure(err, targetArea) {
+  state.generating = false;
+  elBtnFirstrunGenerate.disabled = false;
+  elBtnRegen.disabled = false;
+
+  targetArea.innerHTML =
+    '<div class="msg-error">Error al acceder a las carpetas de Drive. Verifica los permisos del script.</div>';
+}
+
+elBtnFirstrunGenerate.addEventListener('click', function() {
+  startGeneration(elFirstrunGenArea, function() {
+    showNormalState();
+    elNormalGenArea.classList.remove('hidden');
+  });
+});
+
+elBtnRegen.addEventListener('click', function() {
+  elNormalGenArea.classList.remove('hidden');
+  startGeneration(elNormalGenArea, null);
+});
+
+// ── Token lookup (admin mode) ──────────────────────────────────────────────────
+
+function submitToken() {
+  if (state.accessing) return;
+  var raw   = elTokenInput.value.trim();
+  var token = raw.toLowerCase();
+  if (!token) {
+    showTokenError('Ingresa tu código de acceso.');
+    return;
+  }
+
+  state.accessing = true;
+  elBtnAccess.disabled    = true;
+  elTokenInput.disabled   = true;
+  elTokenFormArea.classList.add('hidden');
+  elTokenSpinner.classList.remove('hidden');
+  clearTokenError();
+
+  gasGet({ action: 'lookup', token: token })
+    .then(onLookupSuccess)
+    .catch(onLookupFailure);
+}
+
+function onLookupSuccess(result) {
+  state.accessing = false;
+  elTokenSpinner.classList.add('hidden');
+  elTokenFormArea.classList.remove('hidden');
+  elBtnAccess.disabled  = false;
+  elTokenInput.disabled = false;
+
+  if (!result.success) {
+    var msg = result.error === 'Token no encontrado.'
+      ? 'Código no válido. Verifica que lo copiaste correctamente.'
+      : result.error === 'Este enlace ha expirado. Solicita uno nuevo a Amplifica.'
+        ? 'Este enlace ha vencido. Contacta a Amplifica para solicitar uno nuevo.'
+        : result.error || 'Error al verificar el código.';
+    showTokenError(msg);
+    return;
+  }
+
+  showDocumentView(result);
+}
+
+function onLookupFailure(err) {
+  state.accessing = false;
+  elTokenSpinner.classList.add('hidden');
+  elTokenFormArea.classList.remove('hidden');
+  elBtnAccess.disabled  = false;
+  elTokenInput.disabled = false;
+  showTokenError('Error al verificar el código. Intenta nuevamente.');
+}
+
+function showTokenError(msg) {
+  elTokenError.className = 'msg-error';
+  elTokenError.textContent = msg;
+  elTokenError.classList.remove('hidden');
+}
+
+function clearTokenError() {
+  elTokenError.classList.add('hidden');
+  elTokenError.textContent = '';
+}
+
+elBtnAccess.addEventListener('click', submitToken);
+elTokenInput.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') submitToken();
+});
+
+// ── Document Viewer ─────────────────────────────────────────────────────────────
+
+function showDocumentView(data) {
+  currentDocData = data;
+
+  showView('view-docs');
+
+  elDocClient.textContent = data.client;
+  elDocPeriod.textContent = data.month + ' ' + data.year;
+
+  elHeaderExitArea.innerHTML =
+    '<button class="btn-exit" onclick="exitDocView()">← Salir</button>';
+
+  renderFileList(data.files);
+}
+
+function exitDocView() {
+  showView('view-no-access');
+  elHeaderExitArea.innerHTML = '';
+  if (elTokenInput) elTokenInput.value = '';
+  clearTokenError();
+}
+
+function renderFileList(files) {
+  elFileList.innerHTML = '';
+
+  if (!files || files.length === 0) {
+    elFileList.innerHTML =
+      '<div class="empty-state">No se encontraron documentos en esta carpeta.</div>';
+    elDocCount.textContent = '0 documentos encontrados';
+    elBtnDownloadAll.style.display = 'none';
+    return;
+  }
+
+  files.forEach(function(file) {
+    var icon = getFileIcon(file.mimeType, file.name);
+    var row  = document.createElement('div');
+    row.className = 'file-row';
+    row.innerHTML =
+      '<span class="file-icon">' + icon + '</span>' +
+      '<span class="file-name">' + escapeHtml(file.name) + '</span>' +
+      '<button class="btn-download" title="Descargar"' +
+        ' data-id="'   + escapeHtml(file.id)       + '"' +
+        ' data-mime="' + escapeHtml(file.mimeType)  + '"' +
+        ' data-name="' + escapeHtml(file.name)      + '"' +
+        '>↓</button>';
+    elFileList.appendChild(row);
+  });
+
+  elDocCount.textContent = files.length + ' documento' + (files.length !== 1 ? 's' : '') + ' encontrado' + (files.length !== 1 ? 's' : '');
+  elBtnDownloadAll.style.display   = '';
+  elBtnDownloadAll.disabled        = false;
+  elBtnDownloadAll.textContent     = '↓ Descargar todo (.zip)';
+
+  elFileList.addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn-download');
+    if (!btn || btn.disabled) return;
+    var fileId   = btn.getAttribute('data-id');
+    var mimeType = btn.getAttribute('data-mime');
+    var fileName = btn.getAttribute('data-name');
+    if (!fileId) return;
+    btn.disabled    = true;
+    btn.textContent = '…';
+
+    gasGet({ action: 'download', fileId: fileId, mimeType: mimeType, fileName: fileName })
+      .then(function(result) {
+        btn.disabled    = false;
+        btn.textContent = '↓';
+        if (!result) return;
+        if (result.type === 'base64') {
+          triggerBase64Download(result.data, result.filename);
+        } else if (result.type === 'url') {
+          window.open(result.url, '_blank');
+        }
+      })
+      .catch(function() {
+        btn.disabled    = false;
+        btn.textContent = '↓';
+        alert('No se pudo obtener el enlace de descarga. Intenta nuevamente.');
+      });
+  });
+}
+
+function getFileIcon(mimeType, name) {
+  if (mimeType === 'application/pdf') return '📄';
+  if (mimeType === 'application/vnd.google-apps.spreadsheet') return '📊';
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      mimeType === 'application/vnd.ms-excel' ||
+      (name && name.toLowerCase().endsWith('.xlsx'))) return '📊';
+  return '📁';
+}
+
+function triggerBase64Download(base64, filename, mimeType) {
+  mimeType   = mimeType || 'application/octet-stream';
+  var binary = atob(base64);
+  var bytes  = new Uint8Array(binary.length);
+  for (var i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  var blob = new Blob([bytes], { type: mimeType });
+  var url  = URL.createObjectURL(blob);
+  var a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ── Download All as ZIP ─────────────────────────────────────────────────────────
+
+elZipCancelBtn.addEventListener('click', function() {
+  elZipOverlay.classList.add('hidden');
+  elZipReadyState.classList.add('hidden');
+  elZipLoadingState.classList.remove('hidden');
+});
+
+elZipDownloadLink.addEventListener('click', function() {
+  setTimeout(function() {
+    elZipOverlay.classList.add('hidden');
+    elZipReadyState.classList.add('hidden');
+    elZipLoadingState.classList.remove('hidden');
+  }, 600);
+});
+
+elBtnDownloadAll.addEventListener('click', function() {
+  if (!currentDocData || elBtnDownloadAll.disabled) return;
+
+  elZipReadyState.classList.add('hidden');
+  elZipLoadingState.classList.remove('hidden');
+  elZipOverlay.classList.remove('hidden');
+  elBtnDownloadAll.disabled = true;
+
+  gasGet({
+    action: 'zip',
+    client: currentDocData.client,
+    month:  currentDocData.month,
+    year:   currentDocData.year,
+    files:  currentDocData.files
+  })
+    .then(function(result) {
+      elBtnDownloadAll.disabled = false;
+
+      if (!result || result.success === false) {
+        elZipOverlay.classList.add('hidden');
+        alert('Error al generar el ZIP: ' + (result && result.error ? result.error : 'Error desconocido'));
+        return;
+      }
+
+      if (result.type === 'url') {
+        elZipDownloadLink.href = result.url;
+        elZipLoadingState.classList.add('hidden');
+        elZipReadyState.classList.remove('hidden');
+      }
+    })
+    .catch(function(err) {
+      elZipOverlay.classList.add('hidden');
+      elBtnDownloadAll.disabled = false;
+      alert('Error al generar el ZIP: ' + (err && err.message ? err.message : 'Error desconocido'));
+    });
+});
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>
