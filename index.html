@@ -541,6 +541,144 @@
     }
     .zip-cancel-btn:hover { color: var(--text); }
 
+    /* ── Admin tools ──────────────────────────────────────────────────── */
+    .btn-outline {
+      background: var(--white);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:not(:disabled):hover {
+      background: var(--bg);
+      border-color: #C0C0C2;
+    }
+
+    .admin-tools-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .card-back {
+      margin-bottom: 14px;
+    }
+
+    .form-select {
+      height: 40px;
+      padding: 0 36px 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--white);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23737378' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(47, 48, 255, 0.1);
+    }
+    .form-select:disabled {
+      background-color: var(--bg);
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .renewal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .renewal-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .renewal-item:hover { background: var(--bg); }
+    .renewal-item.selected { border-color: var(--blue); background: #EBF1FF; }
+    .renewal-item-info { flex: 1; min-width: 0; }
+    .renewal-item-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .renewal-item-period { font-size: 12px; color: var(--muted); }
+    .renewal-item-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--error);
+      background: var(--error-bg);
+      border-radius: var(--radius-sm);
+      padding: 2px 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .days-stepper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .days-btn {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      font-size: 18px;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .days-btn:hover { background: var(--bg); }
+    .days-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    #days-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .tool-error {
+      font-size: 13px;
+      color: var(--error);
+      background: var(--error-bg);
+      border: 1px solid #FECACA;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    .url-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .url-row .form-input {
+      flex: 1;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
     /* ── No-access view ───────────────────────────────────────────────── */
     .no-access-wrap {
       display: flex;
@@ -723,13 +861,159 @@
                 Regenerar tokens de acceso
               </button>
             </div>
+
+            <hr class="divider">
+
+            <div class="admin-tools-label">Herramientas</div>
+            <div class="gap-sm"></div>
+            <button class="btn btn-outline btn-block" id="btn-link-gen">
+              Generador de enlaces
+            </button>
+            <div class="gap-sm"></div>
+            <button class="btn btn-outline btn-block" id="btn-renewal">
+              Renovar acceso vencido
+            </button>
+            <div class="gap-sm"></div>
+            <button class="btn btn-outline btn-block" id="btn-explorer">
+              Explorador de casos
+            </button>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- ── View: Document Viewer ────────────────────────────────────── -->
+    <!-- ── View: Link Generator ─────────────────────────────────────── -->
+    <div id="view-link-gen" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-back">
+            <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+          </div>
+          <div class="card-title">Generador de enlaces</div>
+          <div class="card-subtitle">Crea un enlace de acceso directo para un cliente</div>
+        </div>
+        <div class="card-body">
+          <div id="link-gen-loading">
+            <div class="spinner-row">
+              <div class="spinner-dots"><span></span><span></span><span></span></div>
+              Cargando registro de clientes…
+            </div>
+          </div>
+          <div id="link-gen-form" class="hidden">
+            <div class="form-group">
+              <label class="form-label" for="link-year">Año</label>
+              <select id="link-year" class="form-select"></select>
+            </div>
+            <div class="gap-sm"></div>
+            <div class="form-group">
+              <label class="form-label" for="link-month">Mes</label>
+              <select id="link-month" class="form-select"></select>
+            </div>
+            <div class="gap-sm"></div>
+            <div class="form-group">
+              <label class="form-label" for="link-client">Cliente</label>
+              <select id="link-client" class="form-select"></select>
+            </div>
+            <div class="gap-md"></div>
+            <button class="btn btn-primary btn-block" id="btn-gen-link">Generar enlace</button>
+            <div id="link-gen-error" class="tool-error hidden"></div>
+            <div id="link-gen-result" class="hidden">
+              <hr class="divider">
+              <div class="form-label" style="margin-bottom:8px;">Enlace generado</div>
+              <div class="url-row">
+                <input type="text" id="link-gen-url" class="form-input" readonly>
+                <button class="btn btn-outline" id="btn-copy-link" style="flex-shrink:0;padding:0 14px;">Copiar</button>
+              </div>
+              <div class="gap-sm"></div>
+              <div id="link-gen-status" class="msg-success hidden"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── View: Token Renewal ────────────────────────────────────────── -->
+    <div id="view-renewal" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-back">
+            <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+          </div>
+          <div class="card-title">Renovar acceso vencido</div>
+          <div class="card-subtitle">Extiende la vigencia de un token vencido</div>
+        </div>
+        <div class="card-body">
+          <div id="renewal-loading">
+            <div class="spinner-row">
+              <div class="spinner-dots"><span></span><span></span><span></span></div>
+              Cargando tokens vencidos…
+            </div>
+          </div>
+          <div id="renewal-empty" class="hidden">
+            <div class="msg-success">No hay tokens vencidos en el registro.</div>
+          </div>
+          <div id="renewal-form" class="hidden">
+            <div id="renewal-list" class="renewal-list"></div>
+            <hr class="divider">
+            <div class="form-group">
+              <div class="form-label">Días extra de acceso</div>
+              <div class="days-stepper">
+                <button class="days-btn" id="btn-days-minus">−</button>
+                <span id="days-value">5</span>
+                <button class="days-btn" id="btn-days-plus">+</button>
+                <span style="font-size:13px;color:var(--muted);">días</span>
+              </div>
+            </div>
+            <div class="gap-md"></div>
+            <button class="btn btn-primary btn-block" id="btn-renew">Renovar acceso</button>
+            <div id="renewal-msg" class="hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── View: Case Explorer ────────────────────────────────────────── -->
+    <div id="view-explorer" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-back">
+            <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+          </div>
+          <div class="card-title">Explorador de casos</div>
+          <div class="card-subtitle">Accede directamente a los documentos de un cliente</div>
+        </div>
+        <div class="card-body">
+          <div id="explorer-loading">
+            <div class="spinner-row">
+              <div class="spinner-dots"><span></span><span></span><span></span></div>
+              Cargando registro de clientes…
+            </div>
+          </div>
+          <div id="explorer-form" class="hidden">
+            <div class="form-group">
+              <label class="form-label" for="exp-year">Año</label>
+              <select id="exp-year" class="form-select"></select>
+            </div>
+            <div class="gap-sm"></div>
+            <div class="form-group">
+              <label class="form-label" for="exp-month">Mes</label>
+              <select id="exp-month" class="form-select"></select>
+            </div>
+            <div class="gap-sm"></div>
+            <div class="form-group">
+              <label class="form-label" for="exp-client">Cliente</label>
+              <select id="exp-client" class="form-select"></select>
+            </div>
+            <div class="gap-md"></div>
+            <button class="btn btn-primary btn-block" id="btn-explore">Ver documentos</button>
+            <div id="explorer-error" class="tool-error hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── View: Document Viewer ────────────────────────────────────────── -->
     <div id="view-docs" class="hidden">
       <div class="doc-card">
         <div class="doc-header">
@@ -801,7 +1085,9 @@ function gasGet(params) {
 // ── State ──────────────────────────────────────────────────────────────────────
 var state = {
   generating: false,
-  accessing:  false
+  accessing:  false,
+  adminMode:  false,
+  adminCode:  ''
 };
 var currentDocData = null;
 
@@ -840,10 +1126,13 @@ var elBtnVerifyAdmin     = $('btn-verify-admin');
 var elBtnCancelAdmin     = $('btn-cancel-admin');
 var elAdminCodeInput     = $('admin-code-input');
 var elAdminCodeError     = $('admin-code-error');
+var elBtnLinkGen         = $('btn-link-gen');
+var elBtnRenewal         = $('btn-renewal');
+var elBtnExplorer        = $('btn-explorer');
 
 // ── View switcher ──────────────────────────────────────────────────────────────
 function showView(viewId) {
-  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs'];
+  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs', 'view-link-gen', 'view-renewal', 'view-explorer'];
   for (var i = 0; i < views.length; i++) {
     $(views[i]).classList.add('hidden');
   }
@@ -936,6 +1225,8 @@ function submitAdminCode() {
     .then(function(result) {
       elBtnVerifyAdmin.disabled = false;
       if (result.success) {
+        state.adminCode = code;
+        state.adminMode = true;
         enterAdminBootMode();
       } else {
         showAdminError(result.error || 'Código incorrecto.');
@@ -977,6 +1268,11 @@ function enterAdminBootMode() {
 function showNormalState() {
   elBootFirstrun.classList.add('hidden');
   elBootNormal.classList.remove('hidden');
+}
+
+function showAdminPanel() {
+  showView('view-boot');
+  showNormalState();
 }
 
 // ── Generation flow ─────────────────────────────────────────────────────────────
@@ -1130,10 +1426,14 @@ function showDocumentView(data) {
 }
 
 function exitDocView() {
-  showView('view-no-access');
   elHeaderExitArea.innerHTML = '';
   if (elTokenInput) elTokenInput.value = '';
   clearTokenError();
+  if (state.adminMode) {
+    showAdminPanel();
+  } else {
+    showView('view-no-access');
+  }
 }
 
 function renderFileList(files) {
@@ -1283,6 +1583,279 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// ── Admin tool shared helpers ──────────────────────────────────────────────────
+
+var MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function formatDate(iso) {
+  try {
+    var d = new Date(iso);
+    return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch(e) { return iso; }
+}
+
+function showInlineError(elId, msg) {
+  var el = $(elId);
+  el.className = 'tool-error';
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId) {
+  var yearSel   = $(yearSelId);
+  var monthSel  = $(monthSelId);
+  var clientSel = $(clientSelId);
+
+  var years = [];
+  for (var i = 0; i < tokens.length; i++) {
+    if (years.indexOf(tokens[i].year) === -1) years.push(tokens[i].year);
+  }
+  years.sort(function(a, b) { return parseInt(b, 10) - parseInt(a, 10); });
+
+  function fillSel(sel, items, placeholder) {
+    sel.innerHTML = '';
+    var opt = document.createElement('option');
+    opt.value = ''; opt.textContent = placeholder;
+    sel.appendChild(opt);
+    for (var j = 0; j < items.length; j++) {
+      var o = document.createElement('option');
+      o.value = o.textContent = items[j];
+      sel.appendChild(o);
+    }
+  }
+
+  fillSel(yearSel, years, '— Año —');
+  fillSel(monthSel, [], '— Mes —');
+  fillSel(clientSel, [], '— Cliente —');
+  monthSel.disabled = true;
+  clientSel.disabled = true;
+
+  yearSel.onchange = function() {
+    var year = yearSel.value;
+    var months = [];
+    for (var i = 0; i < tokens.length; i++) {
+      if (tokens[i].year === year && months.indexOf(tokens[i].month) === -1) months.push(tokens[i].month);
+    }
+    months.sort(function(a, b) { return MONTHS_ES.indexOf(a) - MONTHS_ES.indexOf(b); });
+    fillSel(monthSel, months, '— Mes —');
+    fillSel(clientSel, [], '— Cliente —');
+    monthSel.disabled = (months.length === 0);
+    clientSel.disabled = true;
+  };
+
+  monthSel.onchange = function() {
+    var year = yearSel.value, month = monthSel.value;
+    var clients = [];
+    for (var i = 0; i < tokens.length; i++) {
+      if (tokens[i].year === year && tokens[i].month === month && clients.indexOf(tokens[i].client) === -1) clients.push(tokens[i].client);
+    }
+    clients.sort();
+    fillSel(clientSel, clients, '— Cliente —');
+    clientSel.disabled = (clients.length === 0);
+  };
+}
+
+// ── Link Generator ─────────────────────────────────────────────────────────────
+
+elBtnLinkGen.addEventListener('click', function() {
+  showView('view-link-gen');
+  $('link-gen-loading').classList.remove('hidden');
+  $('link-gen-form').classList.add('hidden');
+  $('link-gen-result').classList.add('hidden');
+  $('link-gen-error').classList.add('hidden');
+
+  gasGet({ action: 'listTokens', adminCode: state.adminCode })
+    .then(function(r) {
+      $('link-gen-loading').classList.add('hidden');
+      if (!r.success) { showInlineError('link-gen-error', r.error || 'Error al cargar los datos.'); return; }
+      buildCascadingSelects(r.tokens, 'link-year', 'link-month', 'link-client');
+      $('link-gen-form').classList.remove('hidden');
+    })
+    .catch(function() {
+      $('link-gen-loading').classList.add('hidden');
+      showInlineError('link-gen-error', 'Error de conexión al cargar los datos.');
+    });
+});
+
+$('btn-gen-link').addEventListener('click', function() {
+  var year   = $('link-year').value;
+  var month  = $('link-month').value;
+  var client = $('link-client').value;
+  if (!year || !month || !client) { showInlineError('link-gen-error', 'Selecciona año, mes y cliente.'); return; }
+  $('link-gen-error').classList.add('hidden');
+  var btn = $('btn-gen-link');
+  btn.disabled = true; btn.textContent = 'Generando…';
+
+  gasGet({ action: 'generateLink', adminCode: state.adminCode, client: client, year: year, month: month })
+    .then(function(r) {
+      btn.disabled = false; btn.textContent = 'Generar enlace';
+      if (!r.success) { showInlineError('link-gen-error', r.error || 'No se pudo generar el enlace.'); return; }
+      $('link-gen-url').value = r.url;
+      var statusEl = $('link-gen-status');
+      statusEl.textContent = (r.isNew ? '✓ Nuevo token generado.' : '✓ Token activo existente.') + ' Vence: ' + formatDate(r.expiresAt);
+      statusEl.classList.remove('hidden');
+      $('link-gen-result').classList.remove('hidden');
+    })
+    .catch(function() {
+      btn.disabled = false; btn.textContent = 'Generar enlace';
+      showInlineError('link-gen-error', 'Error de conexión.');
+    });
+});
+
+$('btn-copy-link').addEventListener('click', function() {
+  var url = $('link-gen-url').value;
+  if (!url) return;
+  var btn = $('btn-copy-link');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() {
+      btn.textContent = '✓ Copiado';
+      setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+    }).catch(function() { $('link-gen-url').select(); });
+  } else {
+    $('link-gen-url').select();
+    document.execCommand('copy');
+    btn.textContent = '✓ Copiado';
+    setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+  }
+});
+
+// ── Token Renewal ──────────────────────────────────────────────────────────────
+
+var renewalDays = 5;
+var selectedRenewalToken = null;
+
+elBtnRenewal.addEventListener('click', function() {
+  showView('view-renewal');
+  selectedRenewalToken = null;
+  renewalDays = 5;
+  $('days-value').textContent = '5';
+  $('renewal-loading').classList.remove('hidden');
+  $('renewal-empty').classList.add('hidden');
+  $('renewal-form').classList.add('hidden');
+  $('renewal-msg').classList.add('hidden');
+
+  gasGet({ action: 'listTokens', adminCode: state.adminCode })
+    .then(function(r) {
+      $('renewal-loading').classList.add('hidden');
+      if (!r.success) {
+        $('renewal-loading').innerHTML = '<div class="tool-error">' + escapeHtml(r.error || 'Error al cargar los tokens.') + '</div>';
+        return;
+      }
+      var now     = new Date();
+      var expired = r.tokens.filter(function(t) { return new Date(t.expiresAt) < now; });
+      if (expired.length === 0) { $('renewal-empty').classList.remove('hidden'); return; }
+
+      var listEl = $('renewal-list');
+      listEl.innerHTML = '';
+      expired.forEach(function(t) {
+        var item = document.createElement('div');
+        item.className = 'renewal-item';
+        item.dataset.token = t.token;
+        item.innerHTML =
+          '<div class="renewal-item-info">' +
+            '<div class="renewal-item-name">' + escapeHtml(t.client) + '</div>' +
+            '<div class="renewal-item-period">' + escapeHtml(t.month) + ' ' + escapeHtml(t.year) + '</div>' +
+          '</div>' +
+          '<div class="renewal-item-badge">Vencido ' + formatDate(t.expiresAt) + '</div>';
+        item.addEventListener('click', function() {
+          listEl.querySelectorAll('.renewal-item').forEach(function(el) { el.classList.remove('selected'); });
+          item.classList.add('selected');
+          selectedRenewalToken = t.token;
+        });
+        listEl.appendChild(item);
+      });
+      $('renewal-form').classList.remove('hidden');
+    })
+    .catch(function() {
+      $('renewal-loading').innerHTML = '<div class="tool-error">Error de conexión al cargar los tokens.</div>';
+    });
+});
+
+$('btn-days-minus').addEventListener('click', function() {
+  if (renewalDays > 1) { renewalDays--; $('days-value').textContent = renewalDays; }
+});
+$('btn-days-plus').addEventListener('click', function() {
+  if (renewalDays < 10) { renewalDays++; $('days-value').textContent = renewalDays; }
+});
+
+$('btn-renew').addEventListener('click', function() {
+  if (!selectedRenewalToken) { showInlineError('renewal-msg', 'Selecciona un token de la lista.'); return; }
+  var btn = $('btn-renew');
+  btn.disabled = true; btn.textContent = 'Renovando…';
+  $('renewal-msg').classList.add('hidden');
+
+  gasGet({ action: 'renewToken', adminCode: state.adminCode, token: selectedRenewalToken, extraDays: renewalDays })
+    .then(function(r) {
+      btn.disabled = false; btn.textContent = 'Renovar acceso';
+      if (!r.success) { showInlineError('renewal-msg', r.error || 'Error al renovar el token.'); return; }
+      var msgEl = $('renewal-msg');
+      msgEl.className = 'msg-success';
+      msgEl.style.marginTop = '12px';
+      msgEl.textContent = '✓ Acceso renovado hasta ' + formatDate(r.newExpiresAt);
+      msgEl.classList.remove('hidden');
+      selectedRenewalToken = null;
+      $('renewal-list').querySelectorAll('.renewal-item').forEach(function(el) { el.classList.remove('selected'); });
+    })
+    .catch(function() {
+      btn.disabled = false; btn.textContent = 'Renovar acceso';
+      showInlineError('renewal-msg', 'Error de conexión.');
+    });
+});
+
+// ── Case Explorer ──────────────────────────────────────────────────────────────
+
+var explorerTokens = [];
+
+elBtnExplorer.addEventListener('click', function() {
+  showView('view-explorer');
+  $('explorer-loading').classList.remove('hidden');
+  $('explorer-form').classList.add('hidden');
+  $('explorer-error').classList.add('hidden');
+
+  gasGet({ action: 'listTokens', adminCode: state.adminCode })
+    .then(function(r) {
+      $('explorer-loading').classList.add('hidden');
+      if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los datos.'); return; }
+      explorerTokens = r.tokens;
+      buildCascadingSelects(r.tokens, 'exp-year', 'exp-month', 'exp-client');
+      $('explorer-form').classList.remove('hidden');
+    })
+    .catch(function() {
+      $('explorer-loading').classList.add('hidden');
+      showInlineError('explorer-error', 'Error de conexión al cargar los datos.');
+    });
+});
+
+$('btn-explore').addEventListener('click', function() {
+  var year   = $('exp-year').value;
+  var month  = $('exp-month').value;
+  var client = $('exp-client').value;
+  if (!year || !month || !client) { showInlineError('explorer-error', 'Selecciona año, mes y cliente.'); return; }
+
+  var folderId = null;
+  for (var i = 0; i < explorerTokens.length; i++) {
+    var t = explorerTokens[i];
+    if (t.year === year && t.month === month && t.client === client) { folderId = t.folderId; break; }
+  }
+  if (!folderId) { showInlineError('explorer-error', 'No se encontró la carpeta para este cliente.'); return; }
+
+  $('explorer-error').classList.add('hidden');
+  var btn = $('btn-explore');
+  btn.disabled = true; btn.textContent = 'Cargando…';
+
+  gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: folderId })
+    .then(function(r) {
+      btn.disabled = false; btn.textContent = 'Ver documentos';
+      if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los documentos.'); return; }
+      showDocumentView({ client: client, year: year, month: month, files: r.files });
+    })
+    .catch(function() {
+      btn.disabled = false; btn.textContent = 'Ver documentos';
+      showInlineError('explorer-error', 'Error de conexión.');
+    });
+});
+
 </script>
 </body>
 </html>
