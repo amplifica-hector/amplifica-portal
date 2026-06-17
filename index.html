@@ -344,7 +344,7 @@
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 22px;
       font-weight: 700;
-      color: var(--white);
+      color: #FFFFFF;
       margin-bottom: 2px;
     }
 
@@ -700,9 +700,26 @@
       .main          { padding: 48px 64px; }
       .card          { max-width: 860px; }
       .no-access-wrap{ max-width: 860px; }
-      .doc-card      { max-width: 1100px; }
       .card-body     { padding: 28px 36px; }
       .card-header   { padding: 28px 36px 22px; }
+
+      /* ── Boot: 2-column layout ─────────────────────────────────── */
+      .boot-cols             { display: flex; align-items: flex-start; }
+      .boot-col              { flex: 1; min-width: 0; }
+      .boot-col + .boot-col  { border-left: 1px solid var(--border); padding-left: 32px; margin-left: 32px; }
+      .boot-col-sep          { display: none; }
+      .boot-col .admin-tools-label { text-align: left; }
+
+      /* ── Form: Year/Month side by side ────────────────────────── */
+      .form-row-2col             { display: flex; gap: 16px; }
+      .form-row-2col .form-group { flex: 1; min-width: 0; }
+
+      /* ── Doc viewer: sidebar grid ─────────────────────────────── */
+      .doc-card          { max-width: 1100px; display: grid; grid-template-columns: 240px 1fr; }
+      .doc-header        { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; }
+      .doc-section-label { grid-column: 2; grid-row: 1; }
+      .file-list         { grid-column: 2; grid-row: 2; }
+      .doc-footer        { grid-column: 2; grid-row: 3; }
     }
 
     /* ── Combobox ─────────────────────────────────────────────────────── */
@@ -914,59 +931,61 @@
             <div class="card-subtitle">Ingresa o verifica un código de cliente</div>
           </div>
           <div class="card-body">
-            <div id="token-form-area">
-              <div class="form-group">
-                <label class="form-label" for="token-input">Código de acceso</label>
-                <input
-                  type="text"
-                  id="token-input"
-                  class="form-input"
-                  placeholder="Ej: 2026-05-abc123def456"
-                  maxlength="20"
-                  autocomplete="off"
-                  spellcheck="false"
-                >
-              </div>
-              <div class="gap-sm"></div>
-              <div id="token-error" class="hidden"></div>
-              <div class="gap-sm"></div>
-              <button class="btn btn-primary btn-block" id="btn-access">
-                Acceder
-              </button>
-            </div>
-            <div id="token-spinner" class="hidden">
-              <div class="spinner-row">
-                <div class="spinner-dots">
-                  <span></span><span></span><span></span>
+            <div class="boot-cols">
+              <div class="boot-col">
+                <div id="token-form-area">
+                  <div class="form-group">
+                    <label class="form-label" for="token-input">Código de acceso</label>
+                    <input
+                      type="text"
+                      id="token-input"
+                      class="form-input"
+                      placeholder="Ej: 2026-05-abc123def456"
+                      maxlength="20"
+                      autocomplete="off"
+                      spellcheck="false"
+                    >
+                  </div>
+                  <div class="gap-sm"></div>
+                  <div id="token-error" class="hidden"></div>
+                  <div class="gap-sm"></div>
+                  <button class="btn btn-primary btn-block" id="btn-access">
+                    Acceder
+                  </button>
                 </div>
-                Verificando código…
+                <div id="token-spinner" class="hidden">
+                  <div class="spinner-row">
+                    <div class="spinner-dots">
+                      <span></span><span></span><span></span>
+                    </div>
+                    Verificando código…
+                  </div>
+                </div>
+                <hr class="divider">
+                <div class="regen-row">
+                  <div id="normal-generation-area" class="hidden"></div>
+                  <button class="btn-link" id="btn-regen">
+                    Regenerar tokens de acceso
+                  </button>
+                </div>
+              </div>
+              <div class="boot-col">
+                <hr class="divider boot-col-sep">
+                <div class="admin-tools-label">Herramientas</div>
+                <div class="gap-sm"></div>
+                <button class="btn btn-outline btn-block" id="btn-link-gen">
+                  Generador de enlaces
+                </button>
+                <div class="gap-sm"></div>
+                <button class="btn btn-outline btn-block" id="btn-renewal">
+                  Renovar acceso vencido
+                </button>
+                <div class="gap-sm"></div>
+                <button class="btn btn-outline btn-block" id="btn-explorer">
+                  Explorador de casos
+                </button>
               </div>
             </div>
-
-            <hr class="divider">
-
-            <div class="regen-row">
-              <div id="normal-generation-area" class="hidden"></div>
-              <button class="btn-link" id="btn-regen">
-                Regenerar tokens de acceso
-              </button>
-            </div>
-
-            <hr class="divider">
-
-            <div class="admin-tools-label">Herramientas</div>
-            <div class="gap-sm"></div>
-            <button class="btn btn-outline btn-block" id="btn-link-gen">
-              Generador de enlaces
-            </button>
-            <div class="gap-sm"></div>
-            <button class="btn btn-outline btn-block" id="btn-renewal">
-              Renovar acceso vencido
-            </button>
-            <div class="gap-sm"></div>
-            <button class="btn btn-outline btn-block" id="btn-explorer">
-              Explorador de casos
-            </button>
           </div>
         </div>
 
@@ -991,14 +1010,15 @@
             </div>
           </div>
           <div id="link-gen-form" class="hidden">
-            <div class="form-group">
-              <label class="form-label" for="link-year">Año</label>
-              <select id="link-year" class="form-select"></select>
-            </div>
-            <div class="gap-sm"></div>
-            <div class="form-group">
-              <label class="form-label" for="link-month">Mes</label>
-              <select id="link-month" class="form-select"></select>
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label" for="link-year">Año</label>
+                <select id="link-year" class="form-select"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="link-month">Mes</label>
+                <select id="link-month" class="form-select"></select>
+              </div>
             </div>
             <div class="gap-sm"></div>
             <div class="form-group">
@@ -1086,14 +1106,15 @@
             </div>
           </div>
           <div id="explorer-form" class="hidden">
-            <div class="form-group">
-              <label class="form-label" for="exp-year">Año</label>
-              <select id="exp-year" class="form-select"></select>
-            </div>
-            <div class="gap-sm"></div>
-            <div class="form-group">
-              <label class="form-label" for="exp-month">Mes</label>
-              <select id="exp-month" class="form-select"></select>
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label class="form-label" for="exp-year">Año</label>
+                <select id="exp-year" class="form-select"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="exp-month">Mes</label>
+                <select id="exp-month" class="form-select"></select>
+              </div>
             </div>
             <div class="gap-sm"></div>
             <div class="form-group">
