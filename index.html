@@ -850,6 +850,16 @@ function showView(viewId) {
   $(viewId).classList.remove('hidden');
 }
 
+function showTokenAccessError(msg) {
+  showView('view-no-access');
+  var body = elViewNoAccess.querySelector('.card-body');
+  if (body) {
+    body.innerHTML =
+      '<p style="margin:0 0 8px;font-weight:600;color:#111;">Enlace no válido</p>' +
+      '<p style="margin:0;color:#555;">' + msg + '</p>';
+  }
+}
+
 // ── Boot: check URL for token, otherwise show no-access wall ──────────────────
 (function init() {
   if (!GAS_URL || GAS_URL === 'TU_URL_DE_GAS_AQUI') {
@@ -877,11 +887,11 @@ function showView(viewId) {
         if (result.success) {
           showDocumentView(result);
         } else {
-          showView('view-no-access');
+          showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
         }
       })
       .catch(function() {
-        showView('view-no-access');
+        showTokenAccessError('Error de conexión. Verifica tu internet e intenta de nuevo.');
       });
   } else {
     // No token: show the access wall
