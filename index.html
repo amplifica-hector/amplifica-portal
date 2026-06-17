@@ -47,7 +47,8 @@
     }
 
     .header {
-      background: var(--navy);
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
       padding: 0 24px;
       height: 56px;
       display: flex;
@@ -75,15 +76,17 @@
     .header-separator {
       width: 1px;
       height: 20px;
-      background: rgba(255,255,255,0.15);
+      background: var(--border);
       margin: 0 12px;
     }
 
     .header-subtitle {
-      color: rgba(255,255,255,0.6);
+      color: var(--muted);
       font-size: 13px;
       font-weight: 400;
     }
+
+    .logo-dark { display: none; }
 
     .header-action {
       display: flex;
@@ -92,8 +95,8 @@
 
     .btn-exit {
       background: none;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.75);
+      border: 1px solid var(--border);
+      color: var(--muted);
       padding: 6px 14px;
       border-radius: var(--radius-sm);
       font-size: 13px;
@@ -106,19 +109,8 @@
     }
 
     .btn-exit:hover {
-      border-color: rgba(255,255,255,0.45);
-      color: var(--white);
-    }
-
-    /* ── Content wrapper (brand panel + main) ───────────────────────── */
-    .content-wrap {
-      flex: 1;
-      display: flex;
-      min-height: 0;
-    }
-
-    .brand-panel {
-      display: none;
+      border-color: var(--text);
+      color: var(--text);
     }
 
     .main {
@@ -705,32 +697,12 @@
     }
 
     @media (min-width: 1100px) {
-      .brand-panel {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 320px;
-        flex-shrink: 0;
-        background: var(--navy);
-        padding: 48px 32px;
-        gap: 20px;
-      }
-      .brand-panel-logo    { width: 160px; object-fit: contain; }
-      .brand-panel-tagline {
-        font-family: 'Barlow Condensed', sans-serif;
-        font-size: 22px;
-        font-weight: 700;
-        color: rgba(255,255,255,0.7);
-        text-align: center;
-        line-height: 1.25;
-      }
-      .main          { padding: 56px 40px; }
-      .card          { max-width: 600px; }
-      .no-access-wrap{ max-width: 600px; }
-      .doc-card      { max-width: 860px; }
-      .card-body     { padding: 28px 32px; }
-      .card-header   { padding: 28px 32px 22px; }
+      .main          { padding: 48px 64px; }
+      .card          { max-width: 860px; }
+      .no-access-wrap{ max-width: 860px; }
+      .doc-card      { max-width: 1100px; }
+      .card-body     { padding: 28px 36px; }
+      .card-header   { padding: 28px 36px 22px; }
     }
 
     /* ── Combobox ─────────────────────────────────────────────────────── */
@@ -758,7 +730,8 @@
 
     .combo-dropdown {
       position: absolute;
-      top: calc(100% + 4px);
+      bottom: calc(100% + 4px);
+      top: auto;
       left: 0; right: 0;
       background: var(--white);
       border: 1px solid var(--border);
@@ -814,6 +787,10 @@
       .combo-dropdown { background: #2c2c2e; border-color: #3a3a3c; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
       .combo-option:hover,
       .combo-option.combo-active { background: #363638; }
+
+      .btn-primary { color: #ffffff; }
+      .logo-light  { display: none; }
+      .logo-dark   { display: block; }
     }
   </style>
 </head>
@@ -824,20 +801,14 @@
   <header class="header">
     <div class="header-brand">
       <div class="header-logo">
-        <img src="Assets/amplifica-dark-mode.png" alt="Amplifica" class="header-logo-img">
+        <img src="Assets/amplifica-light-mode.png" alt="Amplifica" class="header-logo-img logo-light">
+        <img src="Assets/amplifica-dark-mode.png"  alt="Amplifica" class="header-logo-img logo-dark">
       </div>
       <div class="header-separator"></div>
       <span class="header-subtitle">Portal de Facturación</span>
     </div>
     <div class="header-action" id="header-exit-area"></div>
   </header>
-
-  <!-- ── Content (brand panel + main) ─────────────────────────────── -->
-  <div class="content-wrap">
-  <aside class="brand-panel">
-    <img src="Assets/amplifica-dark-mode.png" alt="Amplifica" class="brand-panel-logo">
-    <p class="brand-panel-tagline">Facturación<br>segura y transparente.</p>
-  </aside>
 
   <!-- ── Main ───────────────────────────────────────────────────────── -->
   <main class="main">
@@ -1186,7 +1157,6 @@
     </div>
 
   </main>
-  </div><!-- /.content-wrap -->
 </div>
 
 <script>
