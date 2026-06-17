@@ -72,6 +72,19 @@
       display: block;
     }
 
+    .header-separator {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.15);
+      margin: 0 12px;
+    }
+
+    .header-subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      font-weight: 400;
+    }
+
     .header-action {
       display: flex;
       align-items: center;
@@ -95,6 +108,17 @@
     .btn-exit:hover {
       border-color: rgba(255,255,255,0.45);
       color: var(--white);
+    }
+
+    /* ── Content wrapper (brand panel + main) ───────────────────────── */
+    .content-wrap {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    .brand-panel {
+      display: none;
     }
 
     .main {
@@ -681,12 +705,115 @@
     }
 
     @media (min-width: 1100px) {
-      .main          { padding: 72px 48px; }
-      .card          { max-width: 560px; }
-      .no-access-wrap{ max-width: 560px; }
-      .doc-card      { max-width: 800px; }
+      .brand-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 320px;
+        flex-shrink: 0;
+        background: var(--navy);
+        padding: 48px 32px;
+        gap: 20px;
+      }
+      .brand-panel-logo    { width: 160px; object-fit: contain; }
+      .brand-panel-tagline {
+        font-family: 'Barlow Condensed', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: rgba(255,255,255,0.7);
+        text-align: center;
+        line-height: 1.25;
+      }
+      .main          { padding: 56px 40px; }
+      .card          { max-width: 600px; }
+      .no-access-wrap{ max-width: 600px; }
+      .doc-card      { max-width: 860px; }
       .card-body     { padding: 28px 32px; }
       .card-header   { padding: 28px 32px 22px; }
+    }
+
+    /* ── Combobox ─────────────────────────────────────────────────────── */
+    .combo-wrap { position: relative; }
+
+    .combo-input {
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--white);
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .combo-input::placeholder { color: var(--muted); font-size: 13px; }
+    .combo-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(18, 23, 85, 0.12);
+    }
+    .combo-input:disabled { background: var(--bg); color: var(--muted); cursor: not-allowed; }
+
+    .combo-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 200;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .combo-option {
+      padding: 9px 12px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .combo-option:hover,
+    .combo-option.combo-active { background: var(--bg); }
+    .combo-empty {
+      padding: 9px 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Dark Mode ────────────────────────────────────────────────────── */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:         #1D1D1F;
+        --white:      #2c2c2e;
+        --border:     #3a3a3c;
+        --text:       #F5F5F7;
+        --muted:      #8d8d92;
+        --blue:       #4548FF;
+        --blue-hover: #3537d9;
+        --error-bg:   #350c0c;
+      }
+
+      .form-input:focus,
+      .form-select:focus,
+      .combo-input:focus { box-shadow: 0 0 0 3px rgba(69, 72, 255, 0.2); }
+
+      .btn-download:hover { background: rgba(69, 72, 255, 0.12); }
+      .renewal-item.selected { background: rgba(69, 72, 255, 0.15); }
+      .msg-warning { background: #2d2b1a; border-color: #6b5900; }
+
+      .btn-outline { background: var(--white); color: var(--text); }
+      .btn-outline:not(:disabled):hover { background: #363638; border-color: #4a4a4c; }
+
+      #zip-overlay { background: rgba(0, 0, 0, 0.75); }
+      .zip-modal   { background: #2c2c2e; }
+      .zip-spinner { border-color: #3a3a3c; border-top-color: #4548FF; }
+      .zip-modal-title { color: #F5F5F7; }
+
+      .combo-dropdown { background: #2c2c2e; border-color: #3a3a3c; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+      .combo-option:hover,
+      .combo-option.combo-active { background: #363638; }
     }
   </style>
 </head>
@@ -699,9 +826,18 @@
       <div class="header-logo">
         <img src="Assets/amplifica-dark-mode.png" alt="Amplifica" class="header-logo-img">
       </div>
+      <div class="header-separator"></div>
+      <span class="header-subtitle">Portal de Facturación</span>
     </div>
     <div class="header-action" id="header-exit-area"></div>
   </header>
+
+  <!-- ── Content (brand panel + main) ─────────────────────────────── -->
+  <div class="content-wrap">
+  <aside class="brand-panel">
+    <img src="Assets/amplifica-dark-mode.png" alt="Amplifica" class="brand-panel-logo">
+    <p class="brand-panel-tagline">Facturación<br>segura y transparente.</p>
+  </aside>
 
   <!-- ── Main ───────────────────────────────────────────────────────── -->
   <main class="main">
@@ -895,8 +1031,13 @@
             </div>
             <div class="gap-sm"></div>
             <div class="form-group">
-              <label class="form-label" for="link-client">Cliente</label>
-              <select id="link-client" class="form-select"></select>
+              <label class="form-label" for="link-client-search">Cliente</label>
+              <div class="combo-wrap">
+                <input type="text" id="link-client-search" class="combo-input"
+                       placeholder="Buscar cliente…" autocomplete="off" disabled>
+                <div class="combo-dropdown hidden" id="link-client-drop"></div>
+                <input type="hidden" id="link-client">
+              </div>
             </div>
             <div class="gap-md"></div>
             <button class="btn btn-primary btn-block" id="btn-gen-link">Generar enlace</button>
@@ -985,8 +1126,13 @@
             </div>
             <div class="gap-sm"></div>
             <div class="form-group">
-              <label class="form-label" for="exp-client">Cliente</label>
-              <select id="exp-client" class="form-select"></select>
+              <label class="form-label" for="exp-client-search">Cliente</label>
+              <div class="combo-wrap">
+                <input type="text" id="exp-client-search" class="combo-input"
+                       placeholder="Buscar cliente…" autocomplete="off" disabled>
+                <div class="combo-dropdown hidden" id="exp-client-drop"></div>
+                <input type="hidden" id="exp-client">
+              </div>
             </div>
             <div class="gap-md"></div>
             <button class="btn btn-primary btn-block" id="btn-explore">Ver documentos</button>
@@ -1040,6 +1186,7 @@
     </div>
 
   </main>
+  </div><!-- /.content-wrap -->
 </div>
 
 <script>
@@ -1571,6 +1718,89 @@ function escapeHtml(str) {
 
 var MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+function makeCombobox(searchId, dropId, hiddenId, items) {
+  var searchEl = $(searchId);
+  var dropEl   = $(dropId);
+  var hiddenEl = $(hiddenId);
+
+  searchEl.value = '';
+  hiddenEl.value = '';
+
+  function renderDrop(filter) {
+    dropEl.innerHTML = '';
+    var q = (filter || '').toLowerCase();
+    var matched = [];
+    for (var i = 0; i < items.length; i++) {
+      if (!q || items[i].toLowerCase().indexOf(q) !== -1) matched.push(items[i]);
+    }
+    if (matched.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'combo-empty';
+      empty.textContent = 'Sin resultados';
+      dropEl.appendChild(empty);
+      return;
+    }
+    for (var j = 0; j < matched.length; j++) {
+      (function(label) {
+        var opt = document.createElement('div');
+        opt.className = 'combo-option';
+        opt.textContent = label;
+        opt.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          searchEl.value = label;
+          hiddenEl.value = label;
+          dropEl.classList.add('hidden');
+        });
+        dropEl.appendChild(opt);
+      })(matched[j]);
+    }
+  }
+
+  searchEl.addEventListener('input', function() {
+    hiddenEl.value = '';
+    renderDrop(searchEl.value);
+    dropEl.classList.remove('hidden');
+  });
+
+  searchEl.addEventListener('focus', function() {
+    renderDrop(searchEl.value);
+    dropEl.classList.remove('hidden');
+  });
+
+  searchEl.addEventListener('blur', function() {
+    setTimeout(function() { dropEl.classList.add('hidden'); }, 150);
+  });
+
+  searchEl.addEventListener('keydown', function(e) {
+    var opts = dropEl.querySelectorAll('.combo-option');
+    var active = dropEl.querySelector('.combo-option.combo-active');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!active) { if (opts[0]) opts[0].classList.add('combo-active'); }
+      else {
+        active.classList.remove('combo-active');
+        if (active.nextElementSibling) active.nextElementSibling.classList.add('combo-active');
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (active) {
+        active.classList.remove('combo-active');
+        if (active.previousElementSibling) active.previousElementSibling.classList.add('combo-active');
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      var cur = dropEl.querySelector('.combo-option.combo-active');
+      if (cur) {
+        searchEl.value = cur.textContent;
+        hiddenEl.value = cur.textContent;
+        dropEl.classList.add('hidden');
+      }
+    } else if (e.key === 'Escape') {
+      dropEl.classList.add('hidden');
+    }
+  });
+}
+
 function formatDate(iso) {
   try {
     var d = new Date(iso);
@@ -1585,10 +1815,9 @@ function showInlineError(elId, msg) {
   el.classList.remove('hidden');
 }
 
-function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId) {
-  var yearSel   = $(yearSelId);
-  var monthSel  = $(monthSelId);
-  var clientSel = $(clientSelId);
+function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId, clientSearchId, clientDropId) {
+  var yearSel  = $(yearSelId);
+  var monthSel = $(monthSelId);
 
   var years = [];
   for (var i = 0; i < tokens.length; i++) {
@@ -1608,11 +1837,18 @@ function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId) {
     }
   }
 
+  function resetCombo() {
+    var s = $(clientSearchId);
+    s.value = ''; s.disabled = true;
+    $(clientSelId).value = '';
+    $(clientDropId).innerHTML = '';
+    $(clientDropId).classList.add('hidden');
+  }
+
   fillSel(yearSel, years, '— Año —');
   fillSel(monthSel, [], '— Mes —');
-  fillSel(clientSel, [], '— Cliente —');
   monthSel.disabled = true;
-  clientSel.disabled = true;
+  resetCombo();
 
   yearSel.onchange = function() {
     var year = yearSel.value;
@@ -1622,9 +1858,8 @@ function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId) {
     }
     months.sort(function(a, b) { return MONTHS_ES.indexOf(a) - MONTHS_ES.indexOf(b); });
     fillSel(monthSel, months, '— Mes —');
-    fillSel(clientSel, [], '— Cliente —');
     monthSel.disabled = (months.length === 0);
-    clientSel.disabled = true;
+    resetCombo();
   };
 
   monthSel.onchange = function() {
@@ -1634,8 +1869,12 @@ function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId) {
       if (tokens[i].year === year && tokens[i].month === month && clients.indexOf(tokens[i].client) === -1) clients.push(tokens[i].client);
     }
     clients.sort();
-    fillSel(clientSel, clients, '— Cliente —');
-    clientSel.disabled = (clients.length === 0);
+    if (clients.length > 0) {
+      makeCombobox(clientSearchId, clientDropId, clientSelId, clients);
+      $(clientSearchId).disabled = false;
+    } else {
+      resetCombo();
+    }
   };
 }
 
@@ -1652,7 +1891,7 @@ elBtnLinkGen.addEventListener('click', function() {
     .then(function(r) {
       $('link-gen-loading').classList.add('hidden');
       if (!r.success) { showInlineError('link-gen-error', r.error || 'Error al cargar los datos.'); return; }
-      buildCascadingSelects(r.tokens, 'link-year', 'link-month', 'link-client');
+      buildCascadingSelects(r.tokens, 'link-year', 'link-month', 'link-client', 'link-client-search', 'link-client-drop');
       $('link-gen-form').classList.remove('hidden');
     })
     .catch(function() {
@@ -1801,7 +2040,7 @@ elBtnExplorer.addEventListener('click', function() {
       $('explorer-loading').classList.add('hidden');
       if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los datos.'); return; }
       explorerTokens = r.tokens;
-      buildCascadingSelects(r.tokens, 'exp-year', 'exp-month', 'exp-client');
+      buildCascadingSelects(r.tokens, 'exp-year', 'exp-month', 'exp-client', 'exp-client-search', 'exp-client-drop');
       $('explorer-form').classList.remove('hidden');
     })
     .catch(function() {
