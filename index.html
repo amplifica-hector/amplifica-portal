@@ -6,26 +6,27 @@
   <title>Amplifica | Portal de Facturación</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ── Reset & Base ─────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --navy:       #141449;
-      --blue:       #2F30FF;
-      --blue-hover: #1B1CAD;
-      --yellow:     #FEDE00;
-      --white:      #FFFFFF;
-      --bg:         #F4F4F5;
-      --border:     #E5E5E6;
-      --text:       #1D1D1F;
-      --muted:      #737378;
-      --error:      #EF4444;
-      --error-bg:   #FEF2F2;
-      --radius-sm:  6px;
-      --radius-md:  8px;
-      --radius-lg:  10px;
+      --navy:         #121755;
+      --blue:         #121755;
+      --blue-hover:   #0a0f44;
+      --primary-blue: #4548FF;
+      --yellow:       #F7DC4B;
+      --white:        #FFFFFF;
+      --bg:           #f8f9fc;
+      --border:       #E1E0E0;
+      --text:         #1D1D1F;
+      --muted:        #737378;
+      --error:        #EF4444;
+      --error-bg:     #FEF2F2;
+      --radius-sm:    6px;
+      --radius-md:    8px;
+      --radius-lg:    10px;
     }
 
     html, body {
@@ -58,48 +59,17 @@
     .header-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
     }
 
     .header-logo {
       display: flex;
       align-items: center;
-      gap: 6px;
     }
 
-    .logo-mark {
-      width: 28px;
-      height: 28px;
-      background: var(--yellow);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .logo-mark svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    .header-name {
-      color: var(--white);
-      font-weight: 700;
-      font-size: 15px;
-      letter-spacing: 0.02em;
-    }
-
-    .header-separator {
-      width: 1px;
-      height: 20px;
-      background: rgba(255,255,255,0.15);
-    }
-
-    .header-subtitle {
-      color: rgba(255,255,255,0.55);
-      font-size: 13px;
-      font-weight: 400;
+    .header-logo-img {
+      height: 32px;
+      object-fit: contain;
+      display: block;
     }
 
     .header-action {
@@ -151,8 +121,9 @@
     }
 
     .card-title {
-      font-size: 16px;
-      font-weight: 600;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
       color: var(--text);
       margin-bottom: 2px;
     }
@@ -203,7 +174,7 @@
       font-weight: 600;
     }
 
-    .btn-yellow:not(:disabled):hover { background: #e8cc00; }
+    .btn-yellow:not(:disabled):hover { background: #d4c23e; }
 
     .btn-block { width: 100%; }
 
@@ -236,7 +207,7 @@
 
     .form-input:focus {
       border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(47, 48, 255, 0.1);
+      box-shadow: 0 0 0 3px rgba(18, 23, 85, 0.12);
     }
 
     .form-input:disabled {
@@ -354,7 +325,8 @@
     }
 
     .doc-client {
-      font-size: 18px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
       font-weight: 700;
       color: var(--white);
       margin-bottom: 2px;
@@ -426,7 +398,7 @@
     }
 
     .btn-download:hover {
-      background: #EBF1FF;
+      background: #eef0f8;
       border-color: var(--blue);
     }
 
@@ -466,7 +438,7 @@
     #zip-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(20, 20, 73, 0.55);
+      background: rgba(18, 23, 85, 0.55);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       display: flex;
@@ -487,8 +459,8 @@
     .zip-spinner {
       width: 40px;
       height: 40px;
-      border: 3px solid #E5E5E6;
-      border-top-color: #2F30FF;
+      border: 3px solid #E1E0E0;
+      border-top-color: #121755;
       border-radius: 50%;
       animation: zip-spin 0.75s linear infinite;
       margin: 0 auto 24px;
@@ -499,9 +471,10 @@
     }
 
     .zip-modal-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: #141449;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #121755;
       margin-bottom: 6px;
     }
 
@@ -586,7 +559,7 @@
     }
     .form-select:focus {
       border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(47, 48, 255, 0.1);
+      box-shadow: 0 0 0 3px rgba(18, 23, 85, 0.12);
     }
     .form-select:disabled {
       background-color: var(--bg);
@@ -612,7 +585,7 @@
       transition: background 0.1s, border-color 0.1s;
     }
     .renewal-item:hover { background: var(--bg); }
-    .renewal-item.selected { border-color: var(--blue); background: #EBF1FF; }
+    .renewal-item.selected { border-color: var(--blue); background: #eef0f8; }
     .renewal-item-info { flex: 1; min-width: 0; }
     .renewal-item-name { font-size: 13px; font-weight: 500; color: var(--text); }
     .renewal-item-period { font-size: 12px; color: var(--muted); }
@@ -698,6 +671,23 @@
       margin-top: 28px;
       text-align: center;
     }
+
+    /* ── Responsive / Desktop ─────────────────────────────────────────── */
+    @media (min-width: 768px) {
+      .main          { padding: 56px 32px; }
+      .card          { max-width: 520px; }
+      .no-access-wrap{ max-width: 520px; }
+      .doc-card      { max-width: 680px; }
+    }
+
+    @media (min-width: 1100px) {
+      .main          { padding: 72px 48px; }
+      .card          { max-width: 560px; }
+      .no-access-wrap{ max-width: 560px; }
+      .doc-card      { max-width: 800px; }
+      .card-body     { padding: 28px 32px; }
+      .card-header   { padding: 28px 32px 22px; }
+    }
   </style>
 </head>
 <body>
@@ -707,15 +697,8 @@
   <header class="header">
     <div class="header-brand">
       <div class="header-logo">
-        <div class="logo-mark">
-          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 2L14 13H2L8 2Z" fill="#141449"/>
-          </svg>
-        </div>
-        <span class="header-name">Amplifica</span>
+        <img src="Assets/amplifica-dark-mode.png" alt="Amplifica" class="header-logo-img">
       </div>
-      <div class="header-separator"></div>
-      <span class="header-subtitle">Portal de Facturación</span>
     </div>
     <div class="header-action" id="header-exit-area"></div>
   </header>
