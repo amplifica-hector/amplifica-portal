@@ -866,6 +866,9 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-pdf-dl:hover { background: #d4c23e; }
     .btn-pdf-tab {
@@ -880,6 +883,9 @@
       font-weight: 500;
       cursor: pointer;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .btn-pdf-tab:hover { background: rgba(255,255,255,0.2); }
     .btn-pdf-close {
@@ -1565,7 +1571,7 @@
           <div class="zip-modal-title">Tu ZIP está listo</div>
           <div class="zip-modal-sub">Haz clic para iniciar la descarga.</div>
           <a id="zip-download-link" href="#" target="_blank" class="btn btn-primary zip-dl-btn">
-            ↓ Descargar ZIP
+            <svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg> Descargar ZIP
           </a>
           <button id="zip-cancel-btn" class="zip-cancel-btn">Cerrar</button>
         </div>
@@ -1585,8 +1591,8 @@
       <div class="pdf-drawer-folio" id="pdf-drawer-folio"></div>
     </div>
     <div class="pdf-drawer-actions">
-      <button class="btn-pdf-dl"  id="btn-pdf-dl">↓ Descargar</button>
-      <button class="btn-pdf-tab" id="btn-pdf-tab">↗ Nueva pestaña</button>
+      <button class="btn-pdf-dl"  id="btn-pdf-dl"><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg> Descargar</button>
+      <button class="btn-pdf-tab" id="btn-pdf-tab"><svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6'/><polyline points='15 3 21 3 21 9'/><line x1='10' y1='14' x2='21' y2='3'/></svg> Nueva pestaña</button>
       <button class="btn-pdf-close" id="btn-pdf-close">✕</button>
     </div>
   </div>
@@ -1601,6 +1607,11 @@
 // ── Configuration ──────────────────────────────────────────────────────────────
 // Replace with your Google Apps Script /exec deployment URL
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxSqHc95b2RgLfcGLWcwdFbPPS2l45ZsWo0poA-_C8_Xy05lWWBpGN8theEnQNOJDQ/exec';
+
+// ── SVG icon strings (currentColor → inherits button color automatically) ──────
+var SVG_DOWNLOAD   = '<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4\'/><polyline points=\'7 10 12 15 17 10\'/><line x1=\'12\' y1=\'15\' x2=\'12\' y2=\'3\'/></svg>';
+var SVG_ARROW_LEFT = '<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><line x1=\'19\' y1=\'12\' x2=\'5\' y2=\'12\'/><polyline points=\'12 19 5 12 12 5\'/></svg>';
+var SVG_EXTERNAL   = '<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6\'/><polyline points=\'15 3 21 3 21 9\'/><line x1=\'10\' y1=\'14\' x2=\'21\' y2=\'3\'/></svg>';
 
 // ── GAS API helper ─────────────────────────────────────────────────────────────
 // All calls use GET to avoid CORS preflight issues with GAS
@@ -2008,7 +2019,7 @@ function showDocumentView(data) {
   elDocPeriod.textContent = data.month + ' ' + data.year;
 
   elHeaderExitArea.innerHTML =
-    '<button class="btn-exit" onclick="exitDocView()">← Salir</button>';
+    '<button class="btn-exit" onclick="exitDocView()">' + SVG_ARROW_LEFT + ' Salir</button>';
 
   if (data.configData) {
     renderDashboard(data);
@@ -2064,14 +2075,14 @@ function renderFileList(files) {
         ' data-id="'   + escapeHtml(file.id)      + '"' +
         ' data-mime="' + escapeHtml(file.mimeType) + '"' +
         ' data-name="' + escapeHtml(file.name)     + '"' +
-        '>↓</button>';
+        '>' + SVG_DOWNLOAD + '</button>';
     elFileList.appendChild(row);
   });
 
   elDocCount.textContent = files.length + ' documento' + (files.length !== 1 ? 's' : '') + ' encontrado' + (files.length !== 1 ? 's' : '');
   elBtnDownloadAll.style.display   = '';
   elBtnDownloadAll.disabled        = false;
-  elBtnDownloadAll.textContent     = '↓ Descargar todo (.zip)';
+  elBtnDownloadAll.innerHTML       = SVG_DOWNLOAD + ' Descargar todo (.zip)';
 
   elFileList.addEventListener('click', function(e) {
     var previewBtn = e.target.closest('.btn-preview');
@@ -2089,13 +2100,13 @@ function renderFileList(files) {
     var mimeType = btn.getAttribute('data-mime');
     var fileName = btn.getAttribute('data-name');
     if (!fileId) return;
-    btn.disabled    = true;
-    btn.textContent = '…';
+    btn.disabled   = true;
+    btn.innerHTML  = '…';
 
     gasGet({ action: 'download', fileId: fileId, mimeType: mimeType, fileName: fileName })
       .then(function(result) {
-        btn.disabled    = false;
-        btn.textContent = '↓';
+        btn.disabled  = false;
+        btn.innerHTML = SVG_DOWNLOAD;
         if (!result) return;
         if (result.type === 'base64') {
           triggerBase64Download(result.data, result.filename);
@@ -2104,8 +2115,8 @@ function renderFileList(files) {
         }
       })
       .catch(function() {
-        btn.disabled    = false;
-        btn.textContent = '↓';
+        btn.disabled  = false;
+        btn.innerHTML = SVG_DOWNLOAD;
         alert('No se pudo obtener el enlace de descarga. Intenta nuevamente.');
       });
   });
