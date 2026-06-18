@@ -934,6 +934,9 @@
     .dash-header {
       background: var(--navy);
       padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .dash-client-name {
       font-family: 'Barlow Condensed', sans-serif;
@@ -1118,6 +1121,17 @@
       align-items: center;
       background: #e8eaf6;
       color: #3949ab;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+    .badge-liq {
+      display: inline-flex;
+      align-items: center;
+      background: #dcfce7;
+      color: #166534;
       font-size: 11px;
       font-weight: 500;
       border-radius: var(--radius-sm);
@@ -2722,6 +2736,8 @@ function rebuildDashTable() {
           (inv.diasVencida ? ' hace ' + inv.diasVencida + ' d' : '') + '</span>';
       } else if (inv.estado === 'nota-credito') {
         tdEstado.innerHTML = '<span class="badge-nc">Nota Crédito</span>';
+      } else if (inv.estado === 'liquidacion') {
+        tdEstado.innerHTML = '<span class="badge-liq">Amplifica te paga</span>';
       } else {
         tdEstado.innerHTML = '<span class="badge-current">Pendiente</span>';
       }
@@ -2897,9 +2913,12 @@ function normalizeInvoice(inv) {
   if (inv.fechaEmision && !inv.fecha)                                         inv.fecha = inv.fechaEmision;
   if (typeof inv.total !== 'undefined' && typeof inv.monto === 'undefined')   inv.monto = inv.total;
 
-  var isNC = inv.tipo && inv.tipo.toUpperCase().indexOf('NOTA CR') !== -1;
+  var isNC  = inv.tipo && inv.tipo.toUpperCase().indexOf('NOTA CR')   !== -1;
+  var isLiq = inv.tipo && inv.tipo.toUpperCase().indexOf('LIQUIDACI') !== -1;
   if (isNC) {
     inv.estado = 'nota-credito';
+  } else if (isLiq) {
+    inv.estado = 'liquidacion';
   } else if (inv.fechaVencimiento) {
     var hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
     var venc = new Date(inv.fechaVencimiento + 'T12:00:00');
@@ -2921,20 +2940,29 @@ function renderDashboard(data) {
 
   for (var n = 0; n < dashInvoices.length; n++) { normalizeInvoice(dashInvoices[n]); }
 
-  var hasOverdue    = false;
-  var totalOverdue  = 0;
-  var totalCurrent  = 0;
-  var totalCreditos = 0;
+  var rawFiles = data.files || [];
+  for (var f = 0; f < rawFiles.length; f++) {
+    var fname = rawFiles[f].name || '';
+    for (var k = 0; k < dashInvoices.length; k++) {
+      var folio = dashInvoices[k].folio;
+      if (folio && !dashInvoices[k].fileId && fname.indexOf('-' + folio + '-') !== -1) {
+        dashInvoices[k].fileId   = rawFiles[f].id;
+        dashInvoices[k].mimeType = rawFiles[f].mimeType;
+      }
+    }
+  }
+
+  var hasOverdue         = false;
+  var totalOverdue       = 0;
+  var totalCurrent       = 0;
+  var totalCreditos      = 0;
+  var totalLiquidaciones = 0;
   for (var i = 0; i < dashInvoices.length; i++) {
     var inv = dashInvoices[i];
-    if (inv.estado === 'nota-credito') {
-      totalCreditos += (inv.monto || 0);
-    } else if (inv.estado === 'overdue') {
-      hasOverdue    = true;
-      totalOverdue += (inv.monto || 0);
-    } else {
-      totalCurrent += (inv.monto || 0);
-    }
+    if      (inv.estado === 'nota-credito') { totalCreditos      += (inv.monto || 0); }
+    else if (inv.estado === 'liquidacion')  { totalLiquidaciones += (inv.monto || 0); }
+    else if (inv.estado === 'overdue')      { hasOverdue = true; totalOverdue += (inv.monto || 0); }
+    else                                    { totalCurrent += (inv.monto || 0); }
   }
   dashState = { tab: hasOverdue ? 'overdue' : 'all', search: '', sortCol: null, sortDir: 'asc' };
 
@@ -2991,6 +3019,9 @@ function renderDashboard(data) {
       (totalCreditos > 0
         ? '<div class="dash-kpi-sub" style="color:var(--muted);">– ' + escapeHtml(fmtCLP(totalCreditos)) + ' en notas de crédito</div>'
         : '') +
+      (totalLiquidaciones > 0
+        ? '<div class="dash-kpi-sub" style="color:#166534;">+ ' + escapeHtml(fmtCLP(totalLiquidaciones)) + ' a recibir de Amplifica</div>'
+        : '') +
       '<div style="margin-top:16px;">' +
         '<div class="dash-kpi-label">Vencimiento</div>' +
         '<div class="dash-kpi-value" style="font-size:18px;">' + escapeHtml(venc) + '</div>' +
@@ -3031,8 +3062,11 @@ function renderDashboard(data) {
   var html =
     '<div class="dash-card">' +
       '<div class="dash-header">' +
-        '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
-        '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
+        '<div>' +
+          '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
+          '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
+        '</div>' +
+        '<button class="btn btn-primary" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">↓ Descargar todo (.zip)</button>' +
       '</div>' +
       '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
       '<div class="dash-table-section">' +
@@ -3111,6 +3145,39 @@ function renderDashboard(data) {
 
   rebuildDashTable();
   renderHistoryChart((dashMeta && dashMeta.historial) || []);
+
+  var dashDlBtn = $('dash-btn-download-all');
+  if (dashDlBtn) {
+    dashDlBtn.addEventListener('click', function () {
+      if (!currentDocData) return;
+      elZipReadyState.classList.add('hidden');
+      elZipLoadingState.classList.remove('hidden');
+      elZipOverlay.classList.remove('hidden');
+      dashDlBtn.disabled = true;
+      gasGet({
+        action: 'zip',
+        client: currentDocData.client,
+        month:  currentDocData.month,
+        year:   currentDocData.year,
+        files:  currentDocData.files
+      }).then(function (result) {
+        dashDlBtn.disabled = false;
+        if (!result || result.success === false) {
+          elZipOverlay.classList.add('hidden');
+          alert('Error al generar el ZIP: ' + (result && result.error ? result.error : 'Error desconocido'));
+          return;
+        }
+        if (result.type === 'url') {
+          elZipDownloadLink.href = result.url;
+          elZipLoadingState.classList.add('hidden');
+          elZipReadyState.classList.remove('hidden');
+        }
+      }).catch(function () {
+        dashDlBtn.disabled = false;
+        elZipOverlay.classList.add('hidden');
+      });
+    });
+  }
 }
 
 // ── Case Explorer ──────────────────────────────────────────────────────────────
