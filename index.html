@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     /* ── Reset & Base ─────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -772,6 +773,358 @@
       color: var(--muted);
     }
 
+    /* ── PDF Drawer ───────────────────────────────────────────────────────── */
+    #pdf-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    #pdf-overlay.open { opacity: 1; pointer-events: auto; }
+
+    #pdf-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 90vw;
+      background: var(--white);
+      box-shadow: -4px 0 32px rgba(0, 0, 0, 0.18);
+      z-index: 900;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(110%);
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #pdf-drawer.open { transform: translateX(0); }
+
+    @media (min-width: 768px) {
+      #pdf-drawer { width: 52vw; min-width: 480px; }
+    }
+
+    .pdf-drawer-head {
+      background: var(--navy);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .pdf-drawer-meta { min-width: 0; flex: 1; }
+    .pdf-drawer-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 3px;
+    }
+    .pdf-drawer-folio {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pdf-drawer-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .btn-pdf-dl {
+      height: 32px;
+      padding: 0 12px;
+      background: var(--yellow);
+      color: var(--navy);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-pdf-dl:hover { background: #d4c23e; }
+    .btn-pdf-tab {
+      height: 32px;
+      padding: 0 12px;
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-pdf-tab:hover { background: rgba(255,255,255,0.2); }
+    .btn-pdf-close {
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-pdf-close:hover { background: rgba(255,255,255,0.2); }
+    .pdf-loading {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      gap: 10px;
+    }
+    #pdf-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+      background: #f0f0f0;
+    }
+
+    /* ── Dashboard ────────────────────────────────────────────────────────── */
+    #dash-wrapper {
+      width: 100%;
+      max-width: 960px;
+    }
+    .dash-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .dash-header {
+      background: var(--navy);
+      padding: 20px 24px;
+    }
+    .dash-client-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .dash-client-period { font-size: 13px; color: rgba(255,255,255,0.55); }
+
+    .dash-kpi-bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    @media (min-width: 600px) {
+      .dash-kpi-bar { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 900px) {
+      .dash-kpi-bar { grid-template-columns: 200px 1fr 220px; }
+    }
+
+    .dash-kpi-card {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    @media (min-width: 600px) {
+      .dash-kpi-card { border-right: 1px solid var(--border); border-bottom: none; }
+      .dash-kpi-card:last-child { border-right: none; }
+    }
+    @media (min-width: 900px) { .dash-kpi-card { border-bottom: none; } }
+
+    .dash-kpi-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .dash-kpi-value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+    }
+    .dash-kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .dash-badge-overdue {
+      display: inline-block;
+      background: var(--error-bg);
+      color: var(--error);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      padding: 2px 7px;
+      margin-left: 8px;
+      vertical-align: middle;
+      font-family: 'Inter', sans-serif;
+    }
+    .dash-kpi-label-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .dash-chart-legend { display: flex; gap: 10px; flex-shrink: 0; }
+    .dash-chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .dash-chart-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dash-chart-wrap { height: 90px; position: relative; }
+
+    .dash-tabs-bar {
+      padding: 14px 24px 0;
+      display: flex;
+      gap: 4px;
+    }
+    .dash-tab {
+      padding: 6px 14px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: none;
+      color: var(--muted);
+      transition: background 0.12s, color 0.12s;
+    }
+    .dash-tab:hover { background: var(--bg); color: var(--text); }
+    .dash-tab.active {
+      background: var(--white);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .dash-search-wrap { padding: 10px 24px; }
+    .dash-search-input {
+      width: 100%;
+      height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .dash-search-input::placeholder { color: var(--muted); }
+    .dash-search-input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(18, 23, 85, 0.12);
+    }
+    .dash-table-wrap { overflow-x: auto; border-top: 1px solid var(--border); }
+    .invoice-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .invoice-table thead th {
+      background: var(--bg);
+      padding: 9px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .invoice-table thead th:hover { color: var(--text); }
+    .invoice-table thead th.sort-active { color: var(--blue); }
+    .invoice-table thead th:last-child,
+    .invoice-table thead th:nth-last-child(2) { cursor: default; }
+    .invoice-table tbody tr { border-bottom: 1px solid var(--border); }
+    .invoice-table tbody tr:last-child { border-bottom: none; }
+    .invoice-table tbody tr.has-file { cursor: pointer; }
+    .invoice-table tbody tr.has-file:hover { background: var(--bg); }
+    .invoice-table td { padding: 11px 16px; vertical-align: middle; }
+    .inv-folio { font-weight: 600; color: var(--text); }
+    .inv-tipo  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .inv-monto { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .inv-actions { text-align: right; white-space: nowrap; }
+    .inv-empty { padding: 36px 24px; text-align: center; color: var(--muted); font-size: 13px; }
+    .badge-overdue {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--error-bg);
+      color: var(--error);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+    .badge-current {
+      display: inline-flex;
+      align-items: center;
+      background: #f4f4f5;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+    .btn-inv-preview {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.12s, border-color 0.12s;
+      margin-left: 4px;
+    }
+    .btn-inv-preview:hover { background: #eef0f8; border-color: var(--blue); }
+    .btn-preview { font-size: 14px; }
+
+    .dash-bank {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      background: var(--bg);
+    }
+    .dash-bank-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+    .dash-bank-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px 24px;
+    }
+    .dash-bank-item-key { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+    .dash-bank-item-val { font-size: 13px; font-weight: 500; color: var(--text); }
+
     /* ── Dark Mode ────────────────────────────────────────────────────── */
     @media (prefers-color-scheme: dark) {
       :root {
@@ -808,6 +1161,14 @@
       .btn-primary { color: #ffffff; }
       .logo-light  { display: none; }
       .logo-dark   { display: block; }
+
+      .dash-search-input:focus { box-shadow: 0 0 0 3px rgba(69, 72, 255, 0.2); }
+      .badge-current { background: #3a3a3c; }
+      .invoice-table thead th { background: var(--bg); }
+      .invoice-table tbody tr.has-file:hover { background: #363638; }
+      .dash-bank { background: var(--bg); }
+      .btn-inv-preview:hover { background: rgba(69, 72, 255, 0.15); }
+      .dash-tab.active { background: var(--white); }
     }
   </style>
 </head>
@@ -1136,7 +1497,8 @@
 
     <!-- ── View: Document Viewer ────────────────────────────────────────── -->
     <div id="view-docs" class="hidden">
-      <div class="doc-card">
+      <!-- Basic mode (no configData) -->
+      <div class="doc-card" id="doc-card">
         <div class="doc-header">
           <div class="doc-client" id="doc-client">—</div>
           <div class="doc-period" id="doc-period">—</div>
@@ -1150,6 +1512,8 @@
           </button>
         </div>
       </div>
+      <!-- Dashboard mode (configData present) — populated dynamically -->
+      <div id="dash-wrapper" class="hidden"></div>
     </div>
 
     <!-- ── ZIP loading overlay ────────────────────────────────────────── -->
@@ -1178,6 +1542,27 @@
     </div>
 
   </main>
+</div>
+
+<!-- ── PDF Preview Drawer ──────────────────────────────────────────────────── -->
+<div id="pdf-overlay"></div>
+<div id="pdf-drawer">
+  <div class="pdf-drawer-head">
+    <div class="pdf-drawer-meta">
+      <div class="pdf-drawer-label">Previsualización</div>
+      <div class="pdf-drawer-folio" id="pdf-drawer-folio"></div>
+    </div>
+    <div class="pdf-drawer-actions">
+      <button class="btn-pdf-dl"  id="btn-pdf-dl">↓ Descargar</button>
+      <button class="btn-pdf-tab" id="btn-pdf-tab">↗ Nueva pestaña</button>
+      <button class="btn-pdf-close" id="btn-pdf-close">✕</button>
+    </div>
+  </div>
+  <div class="pdf-loading" id="pdf-loading">
+    <div class="spinner-dots"><span></span><span></span><span></span></div>
+    Cargando documento…
+  </div>
+  <iframe id="pdf-frame" title="Previsualización de documento" style="display:none;"></iframe>
 </div>
 
 <script>
@@ -1543,13 +1928,23 @@ function showDocumentView(data) {
   elHeaderExitArea.innerHTML =
     '<button class="btn-exit" onclick="exitDocView()">← Salir</button>';
 
-  renderFileList(data.files);
+  if (data.configData) {
+    renderDashboard(data);
+  } else {
+    $('doc-card').classList.remove('hidden');
+    $('dash-wrapper').classList.add('hidden');
+    renderFileList(data.files);
+  }
 }
 
 function exitDocView() {
+  closePdfDrawer();
   elHeaderExitArea.innerHTML = '';
   if (elTokenInput) elTokenInput.value = '';
   clearTokenError();
+  $('doc-card').classList.remove('hidden');
+  $('dash-wrapper').classList.add('hidden');
+  if (dashChart) { dashChart.destroy(); dashChart = null; }
   if (state.adminMode) {
     showAdminPanel();
   } else {
@@ -1569,16 +1964,24 @@ function renderFileList(files) {
   }
 
   files.forEach(function(file) {
-    var icon = getFileIcon(file.mimeType, file.name);
-    var row  = document.createElement('div');
+    var icon  = getFileIcon(file.mimeType, file.name);
+    var isPdf = file.mimeType === 'application/pdf';
+    var row   = document.createElement('div');
     row.className = 'file-row';
     row.innerHTML =
       '<span class="file-icon">' + icon + '</span>' +
       '<span class="file-name">' + escapeHtml(file.name) + '</span>' +
+      (isPdf
+        ? '<button class="btn-download btn-preview" title="Previsualizar"' +
+            ' data-id="'   + escapeHtml(file.id)      + '"' +
+            ' data-mime="' + escapeHtml(file.mimeType) + '"' +
+            ' data-name="' + escapeHtml(file.name)     + '"' +
+            '>🔍</button>'
+        : '') +
       '<button class="btn-download" title="Descargar"' +
-        ' data-id="'   + escapeHtml(file.id)       + '"' +
-        ' data-mime="' + escapeHtml(file.mimeType)  + '"' +
-        ' data-name="' + escapeHtml(file.name)      + '"' +
+        ' data-id="'   + escapeHtml(file.id)      + '"' +
+        ' data-mime="' + escapeHtml(file.mimeType) + '"' +
+        ' data-name="' + escapeHtml(file.name)     + '"' +
         '>↓</button>';
     elFileList.appendChild(row);
   });
@@ -1589,6 +1992,15 @@ function renderFileList(files) {
   elBtnDownloadAll.textContent     = '↓ Descargar todo (.zip)';
 
   elFileList.addEventListener('click', function(e) {
+    var previewBtn = e.target.closest('.btn-preview');
+    if (previewBtn) {
+      openPdfDrawer(
+        previewBtn.getAttribute('data-id'),
+        previewBtn.getAttribute('data-mime'),
+        previewBtn.getAttribute('data-name')
+      );
+      return;
+    }
     var btn = e.target.closest('.btn-download');
     if (!btn || btn.disabled) return;
     var fileId   = btn.getAttribute('data-id');
@@ -2015,6 +2427,450 @@ $('btn-renew').addEventListener('click', function() {
       showInlineError('renewal-msg', 'Error de conexión.');
     });
 });
+
+// ── Dashboard helpers ──────────────────────────────────────────────────────────
+
+var dashInvoices = [];
+var dashMeta     = null;
+var dashState    = { tab: 'overdue', search: '', sortCol: null, sortDir: 'asc' };
+var dashChart    = null;
+
+function fmtCLP(n) {
+  try {
+    return Number(n).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
+  } catch (e) { return '$' + n; }
+}
+
+function formatDateShort(dateStr) {
+  try {
+    var d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch (e) { return dateStr; }
+}
+
+// ── PDF Drawer ─────────────────────────────────────────────────────────────────
+
+(function wirePdfDrawer() {
+  $('btn-pdf-close').addEventListener('click', closePdfDrawer);
+  $('pdf-overlay').addEventListener('click', closePdfDrawer);
+}());
+
+function openPdfDrawer(fileId, mimeType, fileLabel) {
+  var overlay    = $('pdf-overlay');
+  var drawer     = $('pdf-drawer');
+  var frame      = $('pdf-frame');
+  var loading    = $('pdf-loading');
+  var folioEl    = $('pdf-drawer-folio');
+  var dlBtn      = $('btn-pdf-dl');
+  var tabBtn     = $('btn-pdf-tab');
+
+  folioEl.textContent = fileLabel || '';
+  frame.style.display = 'none';
+  frame.src           = 'about:blank';
+  loading.style.display = '';
+
+  overlay.classList.add('open');
+  drawer.classList.add('open');
+
+  gasGet({ action: 'download', fileId: fileId, mimeType: mimeType, fileName: fileLabel })
+    .then(function (result) {
+      if (!result) return;
+      if (result.type === 'url') {
+        frame.src = result.url;
+        dlBtn.onclick  = function () { window.open(result.url, '_blank'); };
+        tabBtn.onclick = function () { window.open(result.url, '_blank'); };
+      } else if (result.type === 'base64') {
+        var binary = atob(result.data);
+        var bytes  = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        var blob = new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+        var url  = URL.createObjectURL(blob);
+        frame.src      = url;
+        dlBtn.onclick  = function () { triggerBase64Download(result.data, result.filename, mimeType); };
+        tabBtn.onclick = function () { window.open(url, '_blank'); };
+      }
+      loading.style.display = 'none';
+      frame.style.display   = '';
+    })
+    .catch(function () {
+      loading.textContent = 'No se pudo cargar el documento.';
+    });
+}
+
+function closePdfDrawer() {
+  $('pdf-overlay').classList.remove('open');
+  $('pdf-drawer').classList.remove('open');
+  $('pdf-frame').src = 'about:blank';
+}
+
+// ── Dashboard rendering ────────────────────────────────────────────────────────
+
+function getFilteredSortedInvoices() {
+  var q      = dashState.search.toLowerCase();
+  var result = [];
+  for (var i = 0; i < dashInvoices.length; i++) {
+    var inv = dashInvoices[i];
+    if (dashState.tab === 'overdue' && inv.estado !== 'overdue') continue;
+    if (q && String(inv.folio || '').toLowerCase().indexOf(q) === -1) continue;
+    result.push(inv);
+  }
+  if (dashState.sortCol) {
+    var col = dashState.sortCol;
+    var dir = dashState.sortDir === 'asc' ? 1 : -1;
+    result.sort(function (a, b) {
+      var av = col === 'monto' ? (Number(a.monto) || 0) : String(a[col] || '');
+      var bv = col === 'monto' ? (Number(b.monto) || 0) : String(b[col] || '');
+      return av < bv ? -dir : av > bv ? dir : 0;
+    });
+  }
+  return result;
+}
+
+function rebuildDashTable() {
+  var rows  = getFilteredSortedInvoices();
+  var tbody = $('invoice-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (rows.length === 0) {
+    var emptyTr = document.createElement('tr');
+    var emptyTd = document.createElement('td');
+    emptyTd.setAttribute('colspan', '5');
+    emptyTd.className   = 'inv-empty';
+    emptyTd.textContent = 'No se encontraron facturas.';
+    emptyTr.appendChild(emptyTd);
+    tbody.appendChild(emptyTr);
+    return;
+  }
+
+  for (var i = 0; i < rows.length; i++) {
+    (function (inv) {
+      var hasFile = !!(inv.fileId && inv.mimeType === 'application/pdf');
+      var tr      = document.createElement('tr');
+      if (hasFile) tr.className = 'has-file';
+
+      var tdFolio = document.createElement('td');
+      tdFolio.innerHTML =
+        '<div class="inv-folio">' + escapeHtml(inv.folio || '') + '</div>' +
+        '<div class="inv-tipo">'  + escapeHtml(inv.tipo  || '') + '</div>';
+      tr.appendChild(tdFolio);
+
+      var tdFecha = document.createElement('td');
+      tdFecha.textContent = inv.fecha ? formatDateShort(inv.fecha) : '—';
+      tr.appendChild(tdFecha);
+
+      var tdMonto = document.createElement('td');
+      tdMonto.className   = 'inv-monto';
+      tdMonto.textContent = fmtCLP(inv.monto || 0);
+      tr.appendChild(tdMonto);
+
+      var tdEstado = document.createElement('td');
+      if (inv.estado === 'overdue') {
+        tdEstado.innerHTML = '<span class="badge-overdue">⏱ Vencida' +
+          (inv.diasVencida ? ' hace ' + inv.diasVencida + ' d' : '') + '</span>';
+      } else {
+        tdEstado.innerHTML = '<span class="badge-current">Pendiente</span>';
+      }
+      tr.appendChild(tdEstado);
+
+      var tdAct = document.createElement('td');
+      tdAct.className = 'inv-actions';
+      if (hasFile) {
+        var btnPrev = document.createElement('button');
+        btnPrev.className   = 'btn-inv-preview';
+        btnPrev.title       = 'Previsualizar PDF';
+        btnPrev.textContent = '🔍';
+
+        var btnDl = document.createElement('button');
+        btnDl.className   = 'btn-download';
+        btnDl.title       = 'Descargar';
+        btnDl.textContent = '↓';
+
+        btnPrev.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openPdfDrawer(inv.fileId, inv.mimeType, inv.folio);
+        });
+
+        btnDl.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (btnDl.disabled) return;
+          btnDl.disabled    = true;
+          btnDl.textContent = '…';
+          gasGet({ action: 'download', fileId: inv.fileId, mimeType: inv.mimeType, fileName: inv.folio })
+            .then(function (result) {
+              btnDl.disabled    = false;
+              btnDl.textContent = '↓';
+              if (!result) return;
+              if (result.type === 'base64') {
+                triggerBase64Download(result.data, result.filename);
+              } else if (result.type === 'url') {
+                window.open(result.url, '_blank');
+              }
+            })
+            .catch(function () {
+              btnDl.disabled    = false;
+              btnDl.textContent = '↓';
+            });
+        });
+
+        tr.addEventListener('click', function (e) {
+          if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview')) return;
+          openPdfDrawer(inv.fileId, inv.mimeType, inv.folio);
+        });
+
+        tdAct.appendChild(btnPrev);
+        tdAct.appendChild(btnDl);
+      }
+      tr.appendChild(tdAct);
+      tbody.appendChild(tr);
+    })(rows[i]);
+  }
+}
+
+function renderHistoryChart(historial) {
+  var canvas = $('hist-chart');
+  if (!canvas || !historial || !historial.length) return;
+  if (typeof Chart === 'undefined') return;
+  if (dashChart) { dashChart.destroy(); dashChart = null; }
+
+  var labels    = [];
+  var pagado    = [];
+  var pendiente = [];
+  for (var i = 0; i < historial.length; i++) {
+    labels.push(historial[i].mes);
+    pagado.push(historial[i].pagado       || 0);
+    pendiente.push(historial[i].pendiente || 0);
+  }
+
+  dashChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label:           'Pagado',
+          data:            pagado,
+          borderColor:     '#4548FF',
+          backgroundColor: 'rgba(69,72,255,0.1)',
+          fill:            true,
+          tension:         0.35,
+          pointRadius:     2,
+          borderWidth:     2
+        },
+        {
+          label:           'Pendiente',
+          data:            pendiente,
+          borderColor:     '#d1d5db',
+          backgroundColor: 'rgba(209,213,219,0.1)',
+          fill:            true,
+          tension:         0.35,
+          pointRadius:     2,
+          borderWidth:     2
+        }
+      ]
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (ctx) {
+              return ctx.dataset.label + ': ' + fmtCLP(ctx.raw);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid:  { display: false },
+          ticks: { font: { size: 10 }, color: '#737378' }
+        },
+        y: { display: false, beginAtZero: false }
+      }
+    }
+  });
+}
+
+function renderDashboard(data) {
+  dashInvoices = data.configData.invoices || [];
+  dashMeta     = data.configData.meta     || {};
+
+  var hasOverdue   = false;
+  var totalOverdue = 0;
+  var totalCurrent = 0;
+  for (var i = 0; i < dashInvoices.length; i++) {
+    var inv = dashInvoices[i];
+    if (inv.estado === 'overdue') {
+      hasOverdue    = true;
+      totalOverdue += (inv.monto || 0);
+    } else {
+      totalCurrent += (inv.monto || 0);
+    }
+  }
+  dashState = { tab: hasOverdue ? 'overdue' : 'all', search: '', sortCol: null, sortDir: 'asc' };
+
+  var bank  = dashMeta.datosBancarios || {};
+  var venc  = dashMeta.vencimiento ? formatDateShort(dashMeta.vencimiento) : '—';
+  var total = totalOverdue + totalCurrent;
+
+  // KPI: client info
+  var kpiClient =
+    '<div class="dash-kpi-card">' +
+      '<div class="dash-kpi-label">Cliente</div>' +
+      '<div class="dash-kpi-value">' + escapeHtml(data.client) + '</div>' +
+      '<div class="dash-kpi-sub">' +
+        (dashMeta.rut ? escapeHtml(dashMeta.rut) + ' · ' : '') +
+        escapeHtml(data.month) + ' ' + escapeHtml(data.year) +
+      '</div>' +
+    '</div>';
+
+  // KPI: historical chart
+  var hist = dashMeta.historial && dashMeta.historial.length;
+  var kpiChart = hist
+    ? '<div class="dash-kpi-card">' +
+        '<div class="dash-kpi-label-row">' +
+          '<span class="dash-kpi-label" style="margin-bottom:0;">Facturación histórica</span>' +
+          '<div class="dash-chart-legend">' +
+            '<span class="dash-chart-legend-item"><span class="dash-chart-dot" style="background:#4548FF"></span>Pagado</span>' +
+            '<span class="dash-chart-legend-item"><span class="dash-chart-dot" style="background:#d1d5db"></span>Pendiente</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="dash-chart-wrap"><canvas id="hist-chart"></canvas></div>' +
+      '</div>'
+    : '<div class="dash-kpi-card"></div>';
+
+  // KPI: accounts payable + due date
+  var kpiPayable =
+    '<div class="dash-kpi-card">' +
+      '<div class="dash-kpi-label">Cuentas por pagar</div>' +
+      '<div class="dash-kpi-value">' + escapeHtml(fmtCLP(total)) +
+        (totalOverdue > 0
+          ? '<span class="dash-badge-overdue">' + escapeHtml(fmtCLP(totalOverdue)) + ' vencido</span>'
+          : '') +
+      '</div>' +
+      (totalCurrent > 0
+        ? '<div class="dash-kpi-sub">+ ' + escapeHtml(fmtCLP(totalCurrent)) + ' este mes</div>'
+        : '') +
+      '<div style="margin-top:16px;">' +
+        '<div class="dash-kpi-label">Vencimiento</div>' +
+        '<div class="dash-kpi-value" style="font-size:18px;">' + escapeHtml(venc) + '</div>' +
+        '<div class="dash-kpi-sub">último día hábil del mes</div>' +
+      '</div>' +
+    '</div>';
+
+  // Banking footer
+  var bankFields = [
+    ['Razón Social', bank.razonSocial],
+    ['RUT',          bank.rut],
+    ['Banco',        bank.banco],
+    ['N° Cuenta',    bank.cuenta],
+    ['Correo',       bank.correo]
+  ];
+  var bankItems = '';
+  for (var b = 0; b < bankFields.length; b++) {
+    if (!bankFields[b][1]) continue;
+    bankItems +=
+      '<div>' +
+        '<div class="dash-bank-item-key">' + escapeHtml(bankFields[b][0]) + '</div>' +
+        '<div class="dash-bank-item-val">' + escapeHtml(bankFields[b][1]) + '</div>' +
+      '</div>';
+  }
+  var bankFooter = bankItems
+    ? '<div class="dash-bank">' +
+        '<div class="dash-bank-label">Datos bancarios</div>' +
+        '<div class="dash-bank-grid">' + bankItems + '</div>' +
+      '</div>'
+    : '';
+
+  var tab1Active = dashState.tab === 'overdue' ? ' active' : '';
+  var tab2Active = dashState.tab === 'all'     ? ' active' : '';
+
+  var html =
+    '<div class="dash-card">' +
+      '<div class="dash-header">' +
+        '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
+        '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
+      '</div>' +
+      '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
+      '<div class="dash-table-section">' +
+        '<div class="dash-tabs-bar">' +
+          '<button class="dash-tab' + tab1Active + '" data-tab="overdue">Por pagar</button>' +
+          '<button class="dash-tab' + tab2Active + '" data-tab="all">Todas</button>' +
+        '</div>' +
+        '<div class="dash-search-wrap">' +
+          '<input class="dash-search-input" id="dash-search" type="text" placeholder="Buscar por folio…">' +
+        '</div>' +
+        '<div class="dash-table-wrap">' +
+          '<table class="invoice-table">' +
+            '<thead><tr>' +
+              '<th data-col="folio" data-label="Folio">Folio</th>' +
+              '<th data-col="fecha" data-label="Fecha">Fecha</th>' +
+              '<th data-col="monto" data-label="Monto" class="inv-monto">Monto</th>' +
+              '<th>Estado</th>' +
+              '<th></th>' +
+            '</tr></thead>' +
+            '<tbody id="invoice-tbody"></tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>' +
+      bankFooter +
+    '</div>';
+
+  var wrapper = $('dash-wrapper');
+  wrapper.innerHTML = html;
+  wrapper.classList.remove('hidden');
+  $('doc-card').classList.add('hidden');
+
+  // Wire tabs
+  var tabBtns = wrapper.querySelectorAll('.dash-tab');
+  for (var t = 0; t < tabBtns.length; t++) {
+    (function (btn) {
+      btn.addEventListener('click', function () {
+        dashState.tab = btn.getAttribute('data-tab');
+        for (var k = 0; k < tabBtns.length; k++) tabBtns[k].classList.remove('active');
+        btn.classList.add('active');
+        rebuildDashTable();
+      });
+    })(tabBtns[t]);
+  }
+
+  // Wire search
+  var searchEl = $('dash-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', function () {
+      dashState.search = searchEl.value;
+      rebuildDashTable();
+    });
+  }
+
+  // Wire sortable column headers
+  var sortThs = wrapper.querySelectorAll('.invoice-table thead th[data-col]');
+  for (var s = 0; s < sortThs.length; s++) {
+    (function (th) {
+      th.addEventListener('click', function () {
+        var col   = th.getAttribute('data-col');
+        if (dashState.sortCol === col) {
+          dashState.sortDir = dashState.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          dashState.sortCol = col;
+          dashState.sortDir = 'asc';
+        }
+        for (var k = 0; k < sortThs.length; k++) {
+          sortThs[k].classList.remove('sort-active');
+          sortThs[k].textContent = sortThs[k].getAttribute('data-label');
+        }
+        th.classList.add('sort-active');
+        th.textContent = th.getAttribute('data-label') + (dashState.sortDir === 'asc' ? ' ↑' : ' ↓');
+        rebuildDashTable();
+      });
+    })(sortThs[s]);
+  }
+
+  rebuildDashTable();
+  renderHistoryChart(dashMeta.historial || []);
+}
 
 // ── Case Explorer ──────────────────────────────────────────────────────────────
 
