@@ -265,6 +265,31 @@
       40%            { transform: scale(1);   opacity: 1; }
     }
 
+    /* ── Splash Overlay ──────────────────────────────────────────────── */
+    #splash-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      background: var(--bg);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    #splash-overlay.splash-visible {
+      opacity: 1;
+    }
+
+    #splash-video {
+      width: min(320px, 80vw);
+      height: auto;
+      display: block;
+    }
+
     /* ── Messages ─────────────────────────────────────────────────────── */
     .msg-error {
       font-size: 13px;
@@ -1169,6 +1194,17 @@
   </style>
 </head>
 <body>
+
+<!-- ── Splash Screen (token boot only) ─────────────────────────────── -->
+<div id="splash-overlay" aria-hidden="true">
+  <video id="splash-video" autoplay muted playsinline loop></video>
+  <div class="splash-spinner">
+    <div class="spinner-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</div>
+
 <div class="app">
 
   <!-- ── Header ─────────────────────────────────────────────────────── -->
@@ -1667,22 +1703,72 @@ function showTokenAccessError(msg) {
   var urlToken  = urlParams.get('token');
 
   if (urlToken) {
-    // Token in URL: show loading state then auto-lookup
-    showView('view-boot');
-    elBootLoading.classList.remove('hidden');
-    elBootFirstrun.classList.add('hidden');
-    elBootNormal.classList.add('hidden');
+    // ── Initialise splash ────────────────────────────────────────────
+    var isDark      = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var splashEl    = document.getElementById('splash-overlay');
+    var splashVideo = document.getElementById('splash-video');
+    splashVideo.src = isDark
+      ? 'Assets/SplashScreen/snapview_dark.mp4'
+      : 'Assets/SplashScreen/snapview_light.mp4';
+    splashEl.style.display = 'flex';
+    splashEl.offsetHeight;                        // force reflow → enables CSS transition
+    splashEl.classList.add('splash-visible');     // fade in
 
+    var splashDismissed = false;
+
+    function dismissSplash(callback) {
+      splashEl.classList.remove('splash-visible'); // fade out (0.5 s)
+      setTimeout(function() {
+        splashEl.style.display = 'none';
+        callback();
+      }, 500);
+    }
+
+    function showLoadingFallback() {
+      showView('view-boot');
+      elBootLoading.classList.remove('hidden');
+      elBootFirstrun.classList.add('hidden');
+      elBootNormal.classList.add('hidden');
+    }
+
+    // ── 4.5 s hard cap ──────────────────────────────────────────────
+    var splashTimeout = setTimeout(function() {
+      if (splashDismissed) return;
+      splashDismissed = true;
+      dismissSplash(showLoadingFallback);
+    }, 4500);
+
+    // ── Data fetch ──────────────────────────────────────────────────
     gasGet({ action: 'lookup', token: urlToken.trim().toLowerCase() })
       .then(function(result) {
-        if (result.success) {
-          showDocumentView(result);
+        if (!splashDismissed) {
+          splashDismissed = true;
+          clearTimeout(splashTimeout);
+          dismissSplash(function() {
+            if (result.success) {
+              showDocumentView(result);
+            } else {
+              showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
+            }
+          });
         } else {
-          showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
+          // Splash already dismissed (4.5 s hit) — view-boot loading is showing
+          if (result.success) {
+            showDocumentView(result);
+          } else {
+            showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
+          }
         }
       })
       .catch(function() {
-        showTokenAccessError('Error de conexión. Verifica tu internet e intenta de nuevo.');
+        var msg = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+        if (!splashDismissed) {
+          splashDismissed = true;
+          clearTimeout(splashTimeout);
+          dismissSplash(function() { showTokenAccessError(msg); });
+        } else {
+          showTokenAccessError(msg);
+        }
       });
   } else {
     // No token: show the access wall
