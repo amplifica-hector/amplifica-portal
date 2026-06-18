@@ -455,9 +455,7 @@
     #zip-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(18, 23, 85, 0.55);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(18, 23, 85, 0.72);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -777,9 +775,7 @@
     #pdf-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.35);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+      background: rgba(0, 0, 0, 0.55);
       z-index: 800;
       opacity: 0;
       pointer-events: none;
@@ -2472,7 +2468,7 @@ function openPdfDrawer(fileId, mimeType, fileLabel) {
   overlay.classList.add('open');
   drawer.classList.add('open');
 
-  gasGet({ action: 'download', fileId: fileId, mimeType: mimeType, fileName: fileLabel })
+  gasGet({ action: 'download', fileId: fileId, mimeType: mimeType, fileName: fileLabel, preview: '1' })
     .then(function (result) {
       if (!result) return;
       if (result.type === 'url') {
