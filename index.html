@@ -1113,6 +1113,64 @@
       padding: 3px 8px;
       white-space: nowrap;
     }
+    .badge-nc {
+      display: inline-flex;
+      align-items: center;
+      background: #e8eaf6;
+      color: #3949ab;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+    .inv-docref { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .btn-expand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--muted);
+      transition: background 0.15s;
+    }
+    .btn-expand:hover { background: #f1f5f9; }
+    .btn-expand.open  { color: var(--blue); }
+    .inv-items-row td {
+      background: #f8f9fc;
+      padding: 8px 16px 12px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .inv-items-list {
+      list-style: none;
+      margin: 0 0 8px 0;
+      padding: 0;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .inv-items-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 2px 0;
+    }
+    .inv-items-list li span:last-child { font-variant-numeric: tabular-nums; color: var(--muted); flex-shrink: 0; }
+    .inv-items-subtotals {
+      display: flex;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
+      flex-wrap: wrap;
+    }
+    .inv-items-subtotals strong { color: var(--text); }
+    .inv-motivo { font-size: 11px; color: var(--muted); margin-top: 4px; font-style: italic; }
     .btn-inv-preview {
       display: inline-flex;
       align-items: center;
@@ -2645,7 +2703,8 @@ function rebuildDashTable() {
       var tdFolio = document.createElement('td');
       tdFolio.innerHTML =
         '<div class="inv-folio">' + escapeHtml(inv.folio || '') + '</div>' +
-        '<div class="inv-tipo">'  + escapeHtml(inv.tipo  || '') + '</div>';
+        '<div class="inv-tipo">'  + escapeHtml(inv.tipo  || '') + '</div>' +
+        (inv.docRef ? '<div class="inv-docref">Ref. Folio ' + escapeHtml(inv.docRef) + '</div>' : '');
       tr.appendChild(tdFolio);
 
       var tdFecha = document.createElement('td');
@@ -2661,6 +2720,8 @@ function rebuildDashTable() {
       if (inv.estado === 'overdue') {
         tdEstado.innerHTML = '<span class="badge-overdue">⏱ Vencida' +
           (inv.diasVencida ? ' hace ' + inv.diasVencida + ' d' : '') + '</span>';
+      } else if (inv.estado === 'nota-credito') {
+        tdEstado.innerHTML = '<span class="badge-nc">Nota Crédito</span>';
       } else {
         tdEstado.innerHTML = '<span class="badge-current">Pendiente</span>';
       }
@@ -2707,15 +2768,61 @@ function rebuildDashTable() {
         });
 
         tr.addEventListener('click', function (e) {
-          if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview')) return;
+          if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview') || e.target.closest('.btn-expand')) return;
           openPdfDrawer(inv.fileId, inv.mimeType, inv.folio);
         });
 
         tdAct.appendChild(btnPrev);
         tdAct.appendChild(btnDl);
       }
+
+      var btnExp = null;
+      if (inv.items && inv.items.length) {
+        btnExp = document.createElement('button');
+        btnExp.className   = 'btn-expand';
+        btnExp.title       = 'Ver ítems';
+        btnExp.textContent = '▾';
+        tdAct.appendChild(btnExp);
+      }
+
       tr.appendChild(tdAct);
       tbody.appendChild(tr);
+
+      if (btnExp) {
+        var trItems = document.createElement('tr');
+        trItems.className = 'inv-items-row hidden';
+        var tdItems = document.createElement('td');
+        tdItems.setAttribute('colspan', '5');
+        var itemsHtml = '<ul class="inv-items-list">';
+        for (var ii = 0; ii < inv.items.length; ii++) {
+          itemsHtml +=
+            '<li><span>' + escapeHtml(inv.items[ii].nombre || '') + '</span>' +
+                '<span>' + escapeHtml(fmtCLP(inv.items[ii].neto || 0)) + '</span></li>';
+        }
+        itemsHtml += '</ul>';
+        itemsHtml +=
+          '<div class="inv-items-subtotals">' +
+            '<span>Neto <strong>' + escapeHtml(fmtCLP(inv.neto || 0)) + '</strong></span>' +
+            '<span>IVA <strong>' + escapeHtml(fmtCLP(inv.iva || 0)) + '</strong></span>' +
+            '<span>Total <strong>' + escapeHtml(fmtCLP(inv.total || inv.monto || 0)) + '</strong></span>' +
+          '</div>';
+        if (inv.motivoDevolucion) {
+          itemsHtml += '<div class="inv-motivo">Motivo: ' + escapeHtml(inv.motivoDevolucion) + '</div>';
+        }
+        tdItems.innerHTML = itemsHtml;
+        trItems.appendChild(tdItems);
+        tbody.appendChild(trItems);
+
+        (function (btn, row) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = row.classList.contains('hidden');
+            row.classList.toggle('hidden');
+            btn.classList.toggle('open', open);
+            btn.textContent = open ? '▴' : '▾';
+          });
+        })(btnExp, trItems);
+      }
     })(rows[i]);
   }
 }
@@ -2786,16 +2893,43 @@ function renderHistoryChart(historial) {
   });
 }
 
+function normalizeInvoice(inv) {
+  if (inv.fechaEmision && !inv.fecha)                                         inv.fecha = inv.fechaEmision;
+  if (typeof inv.total !== 'undefined' && typeof inv.monto === 'undefined')   inv.monto = inv.total;
+
+  var isNC = inv.tipo && inv.tipo.toUpperCase().indexOf('NOTA CR') !== -1;
+  if (isNC) {
+    inv.estado = 'nota-credito';
+  } else if (inv.fechaVencimiento) {
+    var hoy  = new Date(); hoy.setHours(0, 0, 0, 0);
+    var venc = new Date(inv.fechaVencimiento + 'T12:00:00');
+    if (venc < hoy) {
+      inv.estado      = 'overdue';
+      inv.diasVencida = Math.ceil((hoy - venc) / 86400000);
+    } else {
+      inv.estado = 'pendiente';
+    }
+  } else {
+    inv.estado = 'pendiente';
+  }
+  return inv;
+}
+
 function renderDashboard(data) {
   dashInvoices = data.configData.invoices || [];
-  dashMeta     = data.configData.meta     || {};
+  dashMeta     = data.configData.meta     || null;
 
-  var hasOverdue   = false;
-  var totalOverdue = 0;
-  var totalCurrent = 0;
+  for (var n = 0; n < dashInvoices.length; n++) { normalizeInvoice(dashInvoices[n]); }
+
+  var hasOverdue    = false;
+  var totalOverdue  = 0;
+  var totalCurrent  = 0;
+  var totalCreditos = 0;
   for (var i = 0; i < dashInvoices.length; i++) {
     var inv = dashInvoices[i];
-    if (inv.estado === 'overdue') {
+    if (inv.estado === 'nota-credito') {
+      totalCreditos += (inv.monto || 0);
+    } else if (inv.estado === 'overdue') {
       hasOverdue    = true;
       totalOverdue += (inv.monto || 0);
     } else {
@@ -2804,9 +2938,17 @@ function renderDashboard(data) {
   }
   dashState = { tab: hasOverdue ? 'overdue' : 'all', search: '', sortCol: null, sortDir: 'asc' };
 
-  var bank  = dashMeta.datosBancarios || {};
-  var venc  = dashMeta.vencimiento ? formatDateShort(dashMeta.vencimiento) : '—';
-  var total = totalOverdue + totalCurrent;
+  var bank = (dashMeta && dashMeta.datosBancarios) || {};
+  var derivedVencStr = '';
+  for (var dv = 0; dv < dashInvoices.length; dv++) {
+    var dvInv = dashInvoices[dv];
+    if (dvInv.estado !== 'nota-credito' && dvInv.fechaVencimiento && dvInv.fechaVencimiento > derivedVencStr) {
+      derivedVencStr = dvInv.fechaVencimiento;
+    }
+  }
+  var derivedVenc = derivedVencStr ? formatDateShort(derivedVencStr) : '—';
+  var venc        = (dashMeta && dashMeta.vencimiento) ? formatDateShort(dashMeta.vencimiento) : derivedVenc;
+  var netTotal    = totalOverdue + totalCurrent - totalCreditos;
 
   // KPI: client info
   var kpiClient =
@@ -2814,13 +2956,13 @@ function renderDashboard(data) {
       '<div class="dash-kpi-label">Cliente</div>' +
       '<div class="dash-kpi-value">' + escapeHtml(data.client) + '</div>' +
       '<div class="dash-kpi-sub">' +
-        (dashMeta.rut ? escapeHtml(dashMeta.rut) + ' · ' : '') +
+        ((dashMeta && dashMeta.rut) ? escapeHtml(dashMeta.rut) + ' · ' : '') +
         escapeHtml(data.month) + ' ' + escapeHtml(data.year) +
       '</div>' +
     '</div>';
 
   // KPI: historical chart
-  var hist = dashMeta.historial && dashMeta.historial.length;
+  var hist = dashMeta && dashMeta.historial && dashMeta.historial.length;
   var kpiChart = hist
     ? '<div class="dash-kpi-card">' +
         '<div class="dash-kpi-label-row">' +
@@ -2838,13 +2980,16 @@ function renderDashboard(data) {
   var kpiPayable =
     '<div class="dash-kpi-card">' +
       '<div class="dash-kpi-label">Cuentas por pagar</div>' +
-      '<div class="dash-kpi-value">' + escapeHtml(fmtCLP(total)) +
+      '<div class="dash-kpi-value">' + escapeHtml(fmtCLP(netTotal)) +
         (totalOverdue > 0
           ? '<span class="dash-badge-overdue">' + escapeHtml(fmtCLP(totalOverdue)) + ' vencido</span>'
           : '') +
       '</div>' +
       (totalCurrent > 0
-        ? '<div class="dash-kpi-sub">+ ' + escapeHtml(fmtCLP(totalCurrent)) + ' este mes</div>'
+        ? '<div class="dash-kpi-sub">+ ' + escapeHtml(fmtCLP(totalCurrent)) + ' corriente</div>'
+        : '') +
+      (totalCreditos > 0
+        ? '<div class="dash-kpi-sub" style="color:var(--muted);">– ' + escapeHtml(fmtCLP(totalCreditos)) + ' en notas de crédito</div>'
         : '') +
       '<div style="margin-top:16px;">' +
         '<div class="dash-kpi-label">Vencimiento</div>' +
@@ -2854,28 +2999,31 @@ function renderDashboard(data) {
     '</div>';
 
   // Banking footer
-  var bankFields = [
-    ['Razón Social', bank.razonSocial],
-    ['RUT',          bank.rut],
-    ['Banco',        bank.banco],
-    ['N° Cuenta',    bank.cuenta],
-    ['Correo',       bank.correo]
-  ];
-  var bankItems = '';
-  for (var b = 0; b < bankFields.length; b++) {
-    if (!bankFields[b][1]) continue;
-    bankItems +=
-      '<div>' +
-        '<div class="dash-bank-item-key">' + escapeHtml(bankFields[b][0]) + '</div>' +
-        '<div class="dash-bank-item-val">' + escapeHtml(bankFields[b][1]) + '</div>' +
-      '</div>';
+  var bankFooter = '';
+  if (dashMeta && dashMeta.datosBancarios) {
+    var bankFields = [
+      ['Razón Social', bank.razonSocial],
+      ['RUT',          bank.rut],
+      ['Banco',        bank.banco],
+      ['N° Cuenta',    bank.cuenta],
+      ['Correo',       bank.correo]
+    ];
+    var bankItems = '';
+    for (var b = 0; b < bankFields.length; b++) {
+      if (!bankFields[b][1]) continue;
+      bankItems +=
+        '<div>' +
+          '<div class="dash-bank-item-key">' + escapeHtml(bankFields[b][0]) + '</div>' +
+          '<div class="dash-bank-item-val">' + escapeHtml(bankFields[b][1]) + '</div>' +
+        '</div>';
+    }
+    bankFooter = bankItems
+      ? '<div class="dash-bank">' +
+          '<div class="dash-bank-label">Datos bancarios</div>' +
+          '<div class="dash-bank-grid">' + bankItems + '</div>' +
+        '</div>'
+      : '';
   }
-  var bankFooter = bankItems
-    ? '<div class="dash-bank">' +
-        '<div class="dash-bank-label">Datos bancarios</div>' +
-        '<div class="dash-bank-grid">' + bankItems + '</div>' +
-      '</div>'
-    : '';
 
   var tab1Active = dashState.tab === 'overdue' ? ' active' : '';
   var tab2Active = dashState.tab === 'all'     ? ' active' : '';
@@ -2962,7 +3110,7 @@ function renderDashboard(data) {
   }
 
   rebuildDashTable();
-  renderHistoryChart(dashMeta.historial || []);
+  renderHistoryChart((dashMeta && dashMeta.historial) || []);
 }
 
 // ── Case Explorer ──────────────────────────────────────────────────────────────
