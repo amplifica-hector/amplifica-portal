@@ -744,6 +744,25 @@
       .doc-section-label { grid-column: 2; grid-row: 1; }
       .file-list         { grid-column: 2; grid-row: 2; }
       .doc-footer        { grid-column: 2; grid-row: 3; }
+
+      /* ── Dashboard: 2-column sidebar layout ───────────────────── */
+      #dash-wrapper { max-width: 1200px; }
+      .dash-card {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        grid-template-areas:
+          "header  table"
+          "kpi     table"
+          "bank    table";
+        grid-template-rows: auto 1fr auto;
+        max-height: calc(100vh - 160px);
+      }
+      .dash-header        { grid-area: header; border-radius: var(--radius-lg) 0 0 0; }
+      .dash-kpi-bar       { grid-area: kpi; grid-template-columns: 1fr; border-bottom: none; border-right: 1px solid var(--border); }
+      .dash-kpi-card      { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+      .dash-kpi-card:last-child { border-bottom: none !important; }
+      .dash-table-section { grid-area: table; border-left: 1px solid var(--border); overflow-y: auto; }
+      .dash-bank          { grid-area: bank; border-right: 1px solid var(--border); }
     }
 
     /* ── Combobox ─────────────────────────────────────────────────────── */
@@ -1150,11 +1169,11 @@
       background: var(--bg);
       cursor: pointer;
       font-size: 13px;
-      color: var(--muted);
-      transition: background 0.15s;
+      color: var(--blue);
+      transition: background 0.15s, color 0.15s;
     }
-    .btn-expand:hover { background: #f1f5f9; }
-    .btn-expand.open  { color: var(--blue); }
+    .btn-expand:hover { background: #eef0f8; border-color: var(--blue); }
+    .btn-expand.open  { background: #eef0f8; }
     .inv-items-row td {
       background: #f8f9fc;
       padding: 8px 16px 12px 24px;
@@ -2754,7 +2773,7 @@ function rebuildDashTable() {
         var btnDl = document.createElement('button');
         btnDl.className   = 'btn-download';
         btnDl.title       = 'Descargar';
-        btnDl.textContent = '↓';
+        btnDl.innerHTML = SVG_DOWNLOAD;
 
         btnPrev.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -2769,7 +2788,7 @@ function rebuildDashTable() {
           gasGet({ action: 'download', fileId: inv.fileId, mimeType: inv.mimeType, fileName: inv.folio })
             .then(function (result) {
               btnDl.disabled    = false;
-              btnDl.textContent = '↓';
+              btnDl.innerHTML = SVG_DOWNLOAD;
               if (!result) return;
               if (result.type === 'base64') {
                 triggerBase64Download(result.data, result.filename);
@@ -2779,7 +2798,7 @@ function rebuildDashTable() {
             })
             .catch(function () {
               btnDl.disabled    = false;
-              btnDl.textContent = '↓';
+              btnDl.innerHTML = SVG_DOWNLOAD;
             });
         });
 
@@ -3066,7 +3085,7 @@ function renderDashboard(data) {
           '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
           '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
         '</div>' +
-        '<button class="btn btn-primary" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">↓ Descargar todo (.zip)</button>' +
+        '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
       '</div>' +
       '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
       '<div class="dash-table-section">' +
