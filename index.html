@@ -1706,7 +1706,7 @@ var SVG_EXTERNAL   = '<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' hei
 
 // ── GAS API helper ─────────────────────────────────────────────────────────────
 // All calls use GET to avoid CORS preflight issues with GAS
-function gasGet(params) {
+function gasGet(params, timeoutMs) {
   var parts = [];
   var keys  = Object.keys(params);
   for (var i = 0; i < keys.length; i++) {
@@ -1715,10 +1715,20 @@ function gasGet(params) {
     if (v !== null && typeof v === 'object') v = JSON.stringify(v);
     parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(String(v)));
   }
-  return fetch(GAS_URL + '?' + parts.join('&'))
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = null;
+  if (timeoutMs && controller) {
+    timer = setTimeout(function() { controller.abort(); }, timeoutMs);
+  }
+  return fetch(GAS_URL + '?' + parts.join('&'), controller ? { signal: controller.signal } : {})
     .then(function(r) {
+      clearTimeout(timer);
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
+    })
+    .catch(function(err) {
+      clearTimeout(timer);
+      throw err;
     });
 }
 
@@ -1841,7 +1851,7 @@ function showTokenAccessError(msg) {
     }, 4500);
 
     // ── Data fetch ──────────────────────────────────────────────────
-    gasGet({ action: 'lookup', token: urlToken.trim().toLowerCase() })
+    gasGet({ action: 'lookup', token: urlToken.trim().toLowerCase() }, 28000)
       .then(function(result) {
         if (!splashDismissed) {
           splashDismissed = true;
