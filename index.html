@@ -1906,6 +1906,7 @@ function revealHeader() {
 
   var urlParams = new URLSearchParams(window.location.search);
   var urlToken  = urlParams.get('token');
+  var urlAdmin  = urlParams.get('admin');
 
   if (urlToken) {
     // ── Initialise splash ────────────────────────────────────────────
@@ -1980,6 +1981,12 @@ function revealHeader() {
           showTokenAccessError(msg);
         }
       });
+  } else if (urlAdmin === '1') {
+    // Arrived via /admin redirect — restore clean /admin URL and show login prompt
+    history.replaceState({ view: 'admin' }, '', './admin');
+    showView('view-admin-prompt');
+    setTimeout(function() { elAdminCodeInput.focus(); }, 80);
+    setTimeout(revealHeader, 150);
   } else {
     // No token: show the access wall
     showView('view-no-access');
@@ -1992,12 +1999,15 @@ function revealHeader() {
 elBtnShowAdmin.addEventListener('click', function() {
   elAdminCodeInput.value = '';
   elAdminCodeError.classList.add('hidden');
+  if (window.location.pathname.indexOf('/admin') === -1) {
+    history.pushState({ view: 'admin' }, '', './admin');
+  }
   showView('view-admin-prompt');
   setTimeout(function() { elAdminCodeInput.focus(); }, 80);
 });
 
 elBtnCancelAdmin.addEventListener('click', function() {
-  showView('view-no-access');
+  history.back();
 });
 
 elAdminCodeInput.addEventListener('keydown', function(e) {
@@ -2005,6 +2015,17 @@ elAdminCodeInput.addEventListener('keydown', function(e) {
 });
 
 elBtnVerifyAdmin.addEventListener('click', submitAdminCode);
+
+window.addEventListener('popstate', function(e) {
+  var st = e.state;
+  if (st && st.view === 'admin') {
+    elAdminCodeInput.value = '';
+    elAdminCodeError.classList.add('hidden');
+    showView('view-admin-prompt');
+  } else {
+    showView('view-no-access');
+  }
+});
 
 function submitAdminCode() {
   var code = elAdminCodeInput.value.trim().toUpperCase();
