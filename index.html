@@ -752,9 +752,9 @@
         display: grid;
         grid-template-columns: 320px minmax(0, 1fr);
         grid-template-areas:
-          "header   controls"
-          "kpi      table"
-          "bank     table";
+          "header  table"
+          "kpi     table"
+          "bank    table";
         grid-template-rows: auto 1fr auto;
         max-height: calc(100vh - 160px);
       }
@@ -762,7 +762,6 @@
       .dash-kpi-bar       { grid-area: kpi; grid-template-columns: 1fr !important; overflow: hidden; min-width: 0; border-bottom: none; border-right: 1px solid var(--border); }
       .dash-kpi-card      { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
       .dash-kpi-card:last-child { border-bottom: none !important; }
-      .dash-controls      { grid-area: controls; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); min-width: 0; }
       .dash-table-section { grid-area: table; border-left: 1px solid var(--border); overflow-y: auto; min-width: 0; }
       .dash-bank          { grid-area: bank; border-right: 1px solid var(--border); }
     }
@@ -945,6 +944,7 @@
     #dash-wrapper {
       width: 100%;
       max-width: 960px;
+      overflow-x: hidden;
     }
     .dash-card {
       background: var(--white);
@@ -1248,8 +1248,10 @@
 
     /* ── Mobile: narrow-screen overrides ─────────────────────────────── */
     @media (max-width: 599px) {
+      .main { justify-content: flex-start; }
       .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     }
+    canvas { max-width: 100%; }
 
     /* ── Dark Mode ────────────────────────────────────────────────────── */
     @media (prefers-color-scheme: dark) {
@@ -3112,7 +3114,7 @@ function renderDashboard(data) {
         '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
       '</div>' +
       '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
-      '<div class="dash-controls">' +
+      '<div class="dash-table-section">' +
         '<div class="dash-tabs-bar">' +
           '<button class="dash-tab' + tab1Active + '" data-tab="overdue">Por pagar</button>' +
           '<button class="dash-tab' + tab2Active + '" data-tab="all">Todas</button>' +
@@ -3120,8 +3122,6 @@ function renderDashboard(data) {
         '<div class="dash-search-wrap">' +
           '<input class="dash-search-input" id="dash-search" type="text" placeholder="Buscar por folio…">' +
         '</div>' +
-      '</div>' +
-      '<div class="dash-table-section">' +
         '<div class="dash-table-wrap">' +
           '<table class="invoice-table">' +
             '<thead><tr>' +
@@ -3190,6 +3190,7 @@ function renderDashboard(data) {
 
   rebuildDashTable();
   renderHistoryChart((dashMeta && dashMeta.historial) || []);
+  alignDashHeader();
 
   var dashDlBtn = $('dash-btn-download-all');
   if (dashDlBtn) {
@@ -3277,6 +3278,19 @@ $('btn-explore').addEventListener('click', function() {
       showInlineError('explorer-error', 'Error de conexión.');
     });
 });
+
+function alignDashHeader() {
+  if (window.innerWidth < 1100) return;
+  var card   = document.querySelector('.dash-card');
+  var thead  = document.querySelector('.invoice-table thead');
+  var header = document.querySelector('.dash-header');
+  if (!card || !thead || !header) return;
+  var theadBottom = thead.getBoundingClientRect().bottom;
+  var cardTop     = card.getBoundingClientRect().top;
+  header.style.minHeight = (theadBottom - cardTop) + 'px';
+}
+
+window.addEventListener('resize', alignDashHeader);
 
 </script>
 </body>
