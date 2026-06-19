@@ -10,6 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     /* ── Reset & Base ─────────────────────────────────────────────────── */
+    html, body { overflow-x: hidden; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -751,9 +752,9 @@
         display: grid;
         grid-template-columns: 320px minmax(0, 1fr);
         grid-template-areas:
-          "header  table"
-          "kpi     table"
-          "bank    table";
+          "header   controls"
+          "kpi      table"
+          "bank     table";
         grid-template-rows: auto 1fr auto;
         max-height: calc(100vh - 160px);
       }
@@ -761,6 +762,7 @@
       .dash-kpi-bar       { grid-area: kpi; grid-template-columns: 1fr !important; overflow: hidden; min-width: 0; border-bottom: none; border-right: 1px solid var(--border); }
       .dash-kpi-card      { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
       .dash-kpi-card:last-child { border-bottom: none !important; }
+      .dash-controls      { grid-area: controls; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); min-width: 0; }
       .dash-table-section { grid-area: table; border-left: 1px solid var(--border); overflow-y: auto; min-width: 0; }
       .dash-bank          { grid-area: bank; border-right: 1px solid var(--border); }
     }
@@ -949,6 +951,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       overflow: hidden;
+      min-width: 0;
     }
     .dash-header {
       background: var(--navy);
@@ -1242,6 +1245,11 @@
     }
     .dash-bank-item-key { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
     .dash-bank-item-val { font-size: 13px; font-weight: 500; color: var(--text); }
+
+    /* ── Mobile: narrow-screen overrides ─────────────────────────────── */
+    @media (max-width: 599px) {
+      .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
 
     /* ── Dark Mode ────────────────────────────────────────────────────── */
     @media (prefers-color-scheme: dark) {
@@ -3104,7 +3112,7 @@ function renderDashboard(data) {
         '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
       '</div>' +
       '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
-      '<div class="dash-table-section">' +
+      '<div class="dash-controls">' +
         '<div class="dash-tabs-bar">' +
           '<button class="dash-tab' + tab1Active + '" data-tab="overdue">Por pagar</button>' +
           '<button class="dash-tab' + tab2Active + '" data-tab="all">Todas</button>' +
@@ -3112,6 +3120,8 @@ function renderDashboard(data) {
         '<div class="dash-search-wrap">' +
           '<input class="dash-search-input" id="dash-search" type="text" placeholder="Buscar por folio…">' +
         '</div>' +
+      '</div>' +
+      '<div class="dash-table-section">' +
         '<div class="dash-table-wrap">' +
           '<table class="invoice-table">' +
             '<thead><tr>' +
