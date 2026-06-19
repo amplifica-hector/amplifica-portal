@@ -944,7 +944,6 @@
     #dash-wrapper {
       width: 100%;
       max-width: 960px;
-      overflow-x: hidden;
     }
     .dash-card {
       background: var(--white);
@@ -3285,9 +3284,10 @@ function alignDashHeader() {
   var thead  = document.querySelector('.invoice-table thead');
   var header = document.querySelector('.dash-header');
   if (!card || !thead || !header) return;
-  var theadBottom = thead.getBoundingClientRect().bottom;
+  var th          = thead.querySelector('th');
+  var theadBottom = (th || thead).getBoundingClientRect().bottom;
   var cardTop     = card.getBoundingClientRect().top;
-  header.style.minHeight = (theadBottom - cardTop) + 'px';
+  header.style.minHeight = (theadBottom - cardTop - 1) + 'px';
 }
 
 window.addEventListener('resize', alignDashHeader);
