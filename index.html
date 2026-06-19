@@ -57,6 +57,14 @@
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      opacity: 0;
+      transform: translateY(-100%);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+    }
+
+    .header.header-visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     .header-brand {
@@ -86,6 +94,12 @@
       color: var(--muted);
       font-size: 13px;
       font-weight: 400;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .header-subtitle.subtitle-fade {
+      opacity: 0;
+      transform: translateY(-6px);
     }
 
     .logo-dark { display: none; }
@@ -1371,7 +1385,7 @@
         <img src="Assets/amplifica-dark-mode.png"  alt="Amplifica" class="header-logo-img logo-dark">
       </div>
       <div class="header-separator"></div>
-      <span class="header-subtitle">Portal de Facturación</span>
+      <span class="header-subtitle">Portal Facturación Seller</span>
     </div>
     <div class="header-action" id="header-exit-area"></div>
   </header>
@@ -1858,6 +1872,26 @@ function showTokenAccessError(msg) {
   }
 }
 
+// ── Header reveal + subtitle ticker ────────────────────────────────────────────
+var subtitleTexts = ['Portal Facturación Seller', 'SnapView'];
+var subtitleIdx = 0;
+
+function revealHeader() {
+  var headerEl = document.querySelector('header.header');
+  if (!headerEl) { return; }
+  headerEl.classList.add('header-visible');
+  var subtitleEl = document.querySelector('.header-subtitle');
+  if (!subtitleEl) { return; }
+  setInterval(function() {
+    subtitleEl.classList.add('subtitle-fade');
+    setTimeout(function() {
+      subtitleIdx = (subtitleIdx + 1) % subtitleTexts.length;
+      subtitleEl.textContent = subtitleTexts[subtitleIdx];
+      subtitleEl.classList.remove('subtitle-fade');
+    }, 300);
+  }, 3500);
+}
+
 // ── Boot: check URL for token, otherwise show no-access wall ──────────────────
 (function init() {
   if (!GAS_URL || GAS_URL === 'TU_URL_DE_GAS_AQUI') {
@@ -1893,6 +1927,7 @@ function showTokenAccessError(msg) {
       setTimeout(function() {
         splashEl.style.display = 'none';
         callback();
+        revealHeader();
       }, 500);
     }
 
@@ -1948,6 +1983,7 @@ function showTokenAccessError(msg) {
   } else {
     // No token: show the access wall
     showView('view-no-access');
+    setTimeout(revealHeader, 150);
   }
 }());
 
