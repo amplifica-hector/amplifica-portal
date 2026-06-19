@@ -1250,6 +1250,54 @@
       .main { justify-content: flex-start; }
       .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     }
+
+    /* ── Mobile: invoice card layout (< 768px) ────────────────────────── */
+    @media (max-width: 767px) {
+      .invoice-table,
+      .invoice-table tbody   { display: block; }
+      .invoice-table thead   { display: none; }
+
+      .invoice-table tbody tr:not(.inv-items-row) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .invoice-table tbody tr:not(.inv-items-row) td {
+        display: block;
+        padding: 0;
+        border: none;
+      }
+
+      .invoice-table tbody td:nth-child(1) {
+        flex: 1 1 100%;
+        order: 1;
+        margin-bottom: 6px;
+      }
+      .invoice-table tbody td:nth-child(2) { display: none; }
+      .invoice-table tbody td:nth-child(3) {
+        flex: 0 0 auto;
+        order: 2;
+        text-align: left;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+      .invoice-table tbody td:nth-child(4) {
+        flex: 1 0 auto;
+        order: 3;
+      }
+      .invoice-table tbody td.inv-actions {
+        flex: 0 0 auto;
+        order: 4;
+        margin-left: auto;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+      .invoice-table tr.inv-items-row    { display: block; }
+      .invoice-table tr.inv-items-row td { display: block; }
+    }
+
     canvas { max-width: 100%; }
 
     /* ── Dark Mode ────────────────────────────────────────────────────── */
@@ -3190,6 +3238,7 @@ function renderDashboard(data) {
   rebuildDashTable();
   renderHistoryChart((dashMeta && dashMeta.historial) || []);
   alignDashHeader();
+  document.fonts.ready.then(alignDashHeader);
 
   var dashDlBtn = $('dash-btn-download-all');
   if (dashDlBtn) {
