@@ -169,6 +169,39 @@
       padding: 24px 28px;
     }
 
+    /* Admin card width overrides */
+    .card-admin { max-width: 520px; }
+    .card-boot  { max-width: 680px; }
+
+    /* Admin prompt icon */
+    .admin-prompt-icon {
+      margin-bottom: 14px;
+      color: var(--navy);
+    }
+    .admin-prompt-icon svg {
+      width: 44px;
+      height: 44px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Admin mode ribbon (header) */
+    .admin-ribbon {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: var(--yellow);
+      color: var(--navy);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    header.admin-active .admin-ribbon { display: flex; }
+
     /* ── Buttons ──────────────────────────────────────────────────────── */
     .btn {
       display: inline-flex;
@@ -1387,7 +1420,16 @@
       <div class="header-separator"></div>
       <span class="header-subtitle">Portal Facturación Seller</span>
     </div>
-    <div class="header-action" id="header-exit-area"></div>
+    <div class="header-action" id="header-exit-area">
+      <div class="admin-ribbon" id="admin-ribbon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Admin mode
+      </div>
+    </div>
   </header>
 
   <!-- ── Main ───────────────────────────────────────────────────────── -->
@@ -1417,8 +1459,16 @@
 
     <!-- ── View: Admin Code Prompt ─────────────────────────────────── -->
     <div id="view-admin-prompt" class="hidden">
-      <div class="card">
-        <div class="card-header">
+      <div class="card card-admin">
+        <div class="card-header" style="text-align:center; padding-top:32px;">
+          <div class="admin-prompt-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+          </div>
           <div class="card-title">Modo administrador</div>
           <div class="card-subtitle">Ingresa tu código de acceso administrativo</div>
         </div>
@@ -1452,7 +1502,7 @@
 
     <!-- ── View: Boot Screen (admin only) ──────────────────────────── -->
     <div id="view-boot" class="hidden">
-      <div class="card">
+      <div class="card card-boot">
 
         <!-- Loading state -->
         <div id="boot-loading" class="card-body">
@@ -1557,7 +1607,7 @@
 
     <!-- ── View: Link Generator ─────────────────────────────────────── -->
     <div id="view-link-gen" class="hidden">
-      <div class="card">
+      <div class="card card-admin">
         <div class="card-header">
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
@@ -1613,7 +1663,7 @@
 
     <!-- ── View: Token Renewal ────────────────────────────────────────── -->
     <div id="view-renewal" class="hidden">
-      <div class="card">
+      <div class="card card-admin">
         <div class="card-header">
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
@@ -1653,7 +1703,7 @@
 
     <!-- ── View: Case Explorer ────────────────────────────────────────── -->
     <div id="view-explorer" class="hidden">
-      <div class="card">
+      <div class="card card-admin">
         <div class="card-header">
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
@@ -1984,6 +2034,7 @@ function revealHeader() {
   } else if (urlAdmin === '1') {
     // Arrived via /admin redirect — restore clean /admin URL and show login prompt
     history.replaceState({ view: 'admin' }, '', './admin');
+    setAdminRibbon(true);
     showView('view-admin-prompt');
     setTimeout(function() { elAdminCodeInput.focus(); }, 80);
     setTimeout(revealHeader, 150);
@@ -2002,6 +2053,7 @@ elBtnShowAdmin.addEventListener('click', function() {
   if (window.location.pathname.indexOf('/admin') === -1) {
     history.pushState({ view: 'admin' }, '', './admin');
   }
+  setAdminRibbon(true);
   showView('view-admin-prompt');
   setTimeout(function() { elAdminCodeInput.focus(); }, 80);
 });
@@ -2021,8 +2073,10 @@ window.addEventListener('popstate', function(e) {
   if (st && st.view === 'admin') {
     elAdminCodeInput.value = '';
     elAdminCodeError.classList.add('hidden');
+    setAdminRibbon(true);
     showView('view-admin-prompt');
   } else {
+    setAdminRibbon(false);
     showView('view-no-access');
   }
 });
@@ -2093,6 +2147,12 @@ function showNormalState() {
 function showAdminPanel() {
   showView('view-boot');
   showNormalState();
+}
+
+function setAdminRibbon(visible) {
+  var h = document.querySelector('header.header');
+  if (visible) h.classList.add('admin-active');
+  else h.classList.remove('admin-active');
 }
 
 // ── Generation flow ─────────────────────────────────────────────────────────────
@@ -2262,6 +2322,7 @@ function exitDocView() {
   if (state.adminMode) {
     showAdminPanel();
   } else {
+    setAdminRibbon(false);
     showView('view-no-access');
   }
 }
