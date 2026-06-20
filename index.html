@@ -1403,8 +1403,9 @@
     .ins-client-row:hover   { background: var(--bg); }
     .ins-client-row.ins-selected { background: #eef2ff; }
     .ins-badge { font-size: 11px; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; }
-    .ins-badge-ok   { color: #3fb950; }
-    .ins-badge-miss { color: #f85149; }
+    .ins-badge-ok      { color: #3fb950; }
+    .ins-badge-miss    { color: #f85149; }
+    .ins-badge-pending { color: #888; }
     .ins-client-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ins-pdf-count { font-size: 10px; color: var(--muted); flex-shrink: 0; }
     .ins-gen-btn {
@@ -3784,13 +3785,36 @@ function insRunInspectPeriod() {
   insLog('Verificando ' + month + ' ' + year + '…', 'info');
   gasGet({ action: 'inspectPeriod', adminCode: state.adminCode, year: year, month: month }, 30000)
     .then(function(r) {
-      insState.busy = false;
-      $('ins-btn-verify').disabled = false;
-      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
-      insState.clients = r.clients;
-      renderInsClientList(r.clients);
-      var missing = r.clients.filter(function(c) { return !c.hasConfig; }).length;
-      insLog(r.clients.length + ' cliente(s). ' + missing + ' sin config.', missing > 0 ? 'warn' : 'success');
+      if (!r.success) {
+        insState.busy = false;
+        $('ins-btn-verify').disabled = false;
+        insLog('Error: ' + r.error, 'error');
+        return;
+      }
+      insState.clients = r.clients.map(function(c) { return { name: c.name, folderId: c.folderId, hasConfig: false, pdfCount: 0 }; });
+      renderInsClientList(insState.clients, true);
+      insLog(r.clients.length + ' cliente(s) encontrado(s). Verificando estado…', 'info');
+      var promises = r.clients.map(function(client) {
+        return gasGet({ action: 'getClientStatus', adminCode: state.adminCode, folderId: client.folderId }, 30000)
+          .then(function(s) {
+            var status = s.success ? s : { pdfCount: 0, hasConfig: false, configUpdated: null };
+            updateClientRow(client, status);
+            for (var ci = 0; ci < insState.clients.length; ci++) {
+              if (insState.clients[ci].folderId === client.folderId) {
+                insState.clients[ci].hasConfig = status.hasConfig;
+                insState.clients[ci].pdfCount  = status.pdfCount;
+                break;
+              }
+            }
+          })
+          .catch(function() { updateClientRow(client, { pdfCount: 0, hasConfig: false, configUpdated: null }); });
+      });
+      Promise.all(promises).then(function() {
+        insState.busy = false;
+        $('ins-btn-verify').disabled = false;
+        var missing = insState.clients.filter(function(c) { return !c.hasConfig; }).length;
+        insLog('Listo. ' + missing + ' sin config.', missing > 0 ? 'warn' : 'success');
+      });
     })
     .catch(function(e) {
       insState.busy = false;
@@ -3827,7 +3851,7 @@ function insAddConfigButtons(row, client) {
   row.appendChild(regBtn);
 }
 
-function renderInsClientList(clients) {
+function renderInsClientList(clients, pending) {
   var el = $('ins-client-status');
   el.innerHTML = '';
   if (!clients || clients.length === 0) {
@@ -3836,18 +3860,36 @@ function renderInsClientList(clients) {
     $('ins-search-client').classList.add('hidden');
     return;
   }
-  var hasMissing = false;
   for (var i = 0; i < clients.length; i++) {
     (function(client) {
       var row = document.createElement('div');
-      row.className = 'ins-client-row' + (client.hasConfig ? '' : ' ins-missing');
+      row.className = 'ins-client-row';
       row.dataset.folderId = client.folderId;
       row.dataset.name = client.name;
-      var badgeHtml = client.hasConfig
-        ? '<span class="ins-badge ins-badge-ok">✓</span>'
-        : '<span class="ins-badge ins-badge-miss">✗</span>';
-      var pdfHtml = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
-      row.innerHTML = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml;
+      if (pending) {
+        row.innerHTML = '<span class="ins-badge ins-badge-pending">?</span><span class="ins-client-name">' + escapeHtml(client.name) + '</span>';
+      } else {
+        var badgeHtml = client.hasConfig
+          ? '<span class="ins-badge ins-badge-ok">✓</span>'
+          : '<span class="ins-badge ins-badge-miss">✗</span>';
+        var pdfHtml = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
+        row.innerHTML = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml;
+        if (!client.hasConfig) row.classList.add('ins-missing');
+        if (client.hasConfig) { insAddConfigButtons(row, client); }
+        else {
+          var genBtn = document.createElement('button');
+          genBtn.className = 'ins-gen-btn';
+          genBtn.textContent = 'Gen.';
+          genBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+            row.classList.add('ins-selected');
+            insSetClient(client);
+            insRunGenerate(client, row);
+          });
+          row.appendChild(genBtn);
+        }
+      }
       row.addEventListener('click', function(e) {
         if (e.target.tagName === 'BUTTON') return;
         document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
@@ -3855,29 +3897,50 @@ function renderInsClientList(clients) {
         insSetClient(client);
         insLog('Cliente: ' + client.name, 'info');
       });
-      if (client.hasConfig) {
-        insAddConfigButtons(row, client);
-      } else {
-        hasMissing = true;
-        var genBtn = document.createElement('button');
-        genBtn.className = 'ins-gen-btn';
-        genBtn.textContent = 'Gen.';
-        genBtn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
-          row.classList.add('ins-selected');
-          insSetClient(client);
-          insRunGenerate(client, row);
-        });
-        row.appendChild(genBtn);
-      }
       el.appendChild(row);
     })(clients[i]);
   }
   el.classList.remove('hidden');
   $('ins-search-client').classList.remove('hidden');
-  if (hasMissing) $('ins-btn-gen-all').classList.remove('hidden');
-  else            $('ins-btn-gen-all').classList.add('hidden');
+}
+
+function updateClientRow(client, status) {
+  var rows = document.querySelectorAll('.ins-client-row');
+  var row = null;
+  for (var i = 0; i < rows.length; i++) { if (rows[i].dataset.folderId === client.folderId) { row = rows[i]; break; } }
+  if (!row) return;
+  var badge = row.querySelector('.ins-badge');
+  if (badge) {
+    if (status.hasConfig) { badge.className = 'ins-badge ins-badge-ok';  badge.textContent = '✓'; }
+    else                  { badge.className = 'ins-badge ins-badge-miss'; badge.textContent = '✗'; }
+  }
+  var existingPdf = row.querySelector('.ins-pdf-count');
+  if (existingPdf) existingPdf.remove();
+  if (status.pdfCount > 0) {
+    var pdfSpan = document.createElement('span');
+    pdfSpan.className = 'ins-pdf-count';
+    pdfSpan.textContent = status.pdfCount + 'p';
+    var firstBtn = row.querySelector('button');
+    if (firstBtn) row.insertBefore(pdfSpan, firstBtn); else row.appendChild(pdfSpan);
+  }
+  row.classList.toggle('ins-missing', !status.hasConfig);
+  row.querySelectorAll('.ins-row-btn, .ins-gen-btn').forEach(function(b) { b.remove(); });
+  if (status.hasConfig) {
+    insAddConfigButtons(row, client);
+  } else {
+    var genBtn = document.createElement('button');
+    genBtn.className = 'ins-gen-btn';
+    genBtn.textContent = 'Gen.';
+    genBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+      row.classList.add('ins-selected');
+      insSetClient(client);
+      insRunGenerate(client, row);
+    });
+    row.appendChild(genBtn);
+    $('ins-btn-gen-all').classList.remove('hidden');
+  }
 }
 
 function insRunGenerate(client, rowEl) {
@@ -3962,55 +4025,73 @@ function insRunGenAll() {
   var missing = insState.clients.filter(function(c) { return !c.hasConfig; });
   if (missing.length === 0) { insLog('Todos tienen config.', 'success'); return; }
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
-  insLog('Generando config para ' + missing.length + ' cliente(s)…', 'info');
+  var CONCURRENCY = 3;
+  var total = missing.length, idx = 0, completed = 0;
+  insState.busy = true;
   $('ins-btn-gen-all').disabled = true;
-  function processNext(idx) {
-    if (idx >= missing.length) {
-      $('ins-btn-gen-all').disabled = false;
-      insLog('Proceso completado.', 'success');
-      return;
-    }
-    var client = missing[idx];
-    var rows   = document.querySelectorAll('.ins-client-row');
+  insLog('Generando config para ' + total + ' cliente(s) (hasta ' + CONCURRENCY + ' en paralelo)…', 'info');
+
+  function processClient(client) {
+    var rows = document.querySelectorAll('.ins-client-row');
     var targetRow = null;
     for (var i = 0; i < rows.length; i++) { if (rows[i].dataset.folderId === client.folderId) { targetRow = rows[i]; break; } }
-    insState.busy = true;
     var genBtn = targetRow ? targetRow.querySelector('.ins-gen-btn') : null;
     if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
-    insLog('[' + (idx + 1) + '/' + missing.length + '] ' + client.name, 'info');
-    gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId }, 120000)
+    return gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: client.folderId }, 30000)
       .then(function(r) {
-        insState.busy = false;
-        if (!r.success) {
-          insLog('  Error: ' + r.error, 'error');
-          if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
-        } else {
-          var logs = r.logs || [];
-          for (var li = 0; li < logs.length; li++) {
-            var t = logs[li].indexOf('ERROR') === 0 ? 'error' : logs[li].indexOf('OK') === 0 ? 'success' : 'info';
-            insLog('  ' + logs[li], t);
-          }
-          insLog('  ✓ ' + r.invoiceCount + ' factura(s)', 'success');
-          if (targetRow) {
-            var badge = targetRow.querySelector('.ins-badge');
-            if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
-            if (genBtn) genBtn.remove();
-            insAddConfigButtons(targetRow, client);
-          }
-          for (var ci = 0; ci < insState.clients.length; ci++) {
-            if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
-          }
-        }
-        processNext(idx + 1);
+        if (!r.success) throw new Error(r.error);
+        var pdfs = (r.files || []).filter(function(f) { return f.mimeType === 'application/pdf'; });
+        pdfs.sort(function(a, b) { return a.name < b.name ? -1 : 1; });
+        if (!pdfs.length) { insLog('  ' + client.name + ': sin PDFs', 'warn'); return; }
+        var done = 0;
+        var promises = pdfs.map(function(pdf) {
+          return gasGet({ action: 'parseSinglePDF', adminCode: state.adminCode, fileId: pdf.id }, 60000)
+            .then(function(res) { done++; return (res.success && res.invoice) ? res.invoice : null; })
+            .catch(function() { done++; return null; });
+        });
+        return Promise.all(promises).then(function(invoices) {
+          var valid = invoices.filter(Boolean);
+          if (!valid.length) { insLog('  ' + client.name + ': ningún PDF procesado', 'error'); return; }
+          return gasGet({ action: 'saveClientConfig', adminCode: state.adminCode, folderId: client.folderId, invoices: JSON.stringify(valid) }, 30000)
+            .then(function(saveR) {
+              if (!saveR.success) { insLog('  ' + client.name + ': error al guardar — ' + saveR.error, 'error'); return; }
+              insLog('  ✓ ' + client.name + ' — ' + saveR.invoiceCount + ' factura(s)', 'success');
+              if (targetRow) {
+                var badge = targetRow.querySelector('.ins-badge');
+                if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
+                if (genBtn) genBtn.remove();
+                insAddConfigButtons(targetRow, client);
+              }
+              for (var ci = 0; ci < insState.clients.length; ci++) {
+                if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
+              }
+            });
+        });
       })
       .catch(function(e) {
-        insState.busy = false;
-        insLog('  Error: ' + (e.message || e), 'error');
+        insLog('  ' + client.name + ': error — ' + (e.message || e), 'error');
         if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
-        processNext(idx + 1);
       });
   }
-  processNext(0);
+
+  function startNext() {
+    if (idx >= total) return;
+    var client = missing[idx++];
+    insLog('[' + idx + '/' + total + '] ' + client.name, 'info');
+    processClient(client).finally(function() {
+      completed++;
+      if (completed === total) {
+        insState.busy = false;
+        $('ins-btn-gen-all').disabled = false;
+        insLog('Proceso completado (' + total + ' cliente(s)).', 'success');
+        if (!insState.clients.filter(function(c) { return !c.hasConfig; }).length) $('ins-btn-gen-all').classList.add('hidden');
+      } else {
+        startNext();
+      }
+    });
+  }
+
+  for (var i = 0; i < Math.min(CONCURRENCY, total); i++) startNext();
 }
 
 // ── PDF Inspector tab ─────────────────────────────────────────────────────────
