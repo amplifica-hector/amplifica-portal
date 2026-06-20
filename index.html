@@ -1381,8 +1381,8 @@
     }
     .ins-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
-    .ins-title-row  { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
-    .ins-title-icon { height: 28px; width: auto; flex-shrink: 0; }
+    .ins-icon-wrap  { display: block; text-align: center; margin: 8px 0 4px; }
+    .ins-title-icon { height: 48px; width: auto; }
     .ins-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; }
     .ins-tab {
       flex: 1; padding: 5px 2px; font-size: 11px; font-family: inherit; font-weight: 500;
@@ -1954,13 +1954,11 @@
         <div class="ins-controls">
           <div class="ins-controls-header">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
-            <div class="ins-title-row">
-              <div class="ins-title">Inspector de Facturas</div>
-              <picture>
-                <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
-                <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" class="ins-title-icon">
-              </picture>
-            </div>
+            <picture class="ins-icon-wrap">
+              <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
+              <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" class="ins-title-icon">
+            </picture>
+            <div class="ins-title">Inspector de Facturas</div>
           </div>
 
           <!-- Tool tabs -->
