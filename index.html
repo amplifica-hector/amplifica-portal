@@ -3738,17 +3738,16 @@ function insSetClient(client) {
   insLoadPDFs(client.folderId);
 }
 
-function insRunLoadConfig() {
+function insRunLoadConfig(btnEl) {
   if (!insState.client) { insLog('Selecciona un cliente primero.', 'warn'); return; }
   if (insState.busy)    { insLog('Operación en curso, espera…', 'warn'); return; }
   insState.busy = true;
-  var btn = $('ins-btn-view-config');
-  btn.disabled = true;
+  if (btnEl) btnEl.disabled = true;
   insLog('Cargando config: ' + insState.client.name, 'info');
   gasGet({ action: 'loadClientConfig', adminCode: state.adminCode, folderId: insState.client.folderId })
     .then(function(r) {
       insState.busy = false;
-      btn.disabled = false;
+      if (btnEl) btnEl.disabled = false;
       if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
       if (!r.invoices) { insLog('Sin config para este cliente.', 'warn'); return; }
       insLog('─── invoices.json (' + r.invoices.length + ' doc(s)) ───', 'data');
@@ -3767,7 +3766,7 @@ function insRunLoadConfig() {
     })
     .catch(function(e) {
       insState.busy = false;
-      btn.disabled = false;
+      if (btnEl) btnEl.disabled = false;
       insLog('Error: ' + (e.message || e), 'error');
     });
 }
@@ -3801,6 +3800,7 @@ function insRunInspectPeriod() {
 }
 
 function insAddConfigButtons(row, client) {
+  row.querySelectorAll('.ins-row-btn, .ins-gen-btn').forEach(function(b) { b.remove(); });
   var verBtn = document.createElement('button');
   verBtn.className = 'ins-row-btn';
   verBtn.textContent = 'Ver';
@@ -3810,7 +3810,7 @@ function insAddConfigButtons(row, client) {
     document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
     row.classList.add('ins-selected');
     insSetClient(client);
-    insRunLoadConfig();
+    insRunLoadConfig(this);
   });
   var regBtn = document.createElement('button');
   regBtn.className = 'ins-gen-btn';
@@ -3884,13 +3884,14 @@ function insRunGenerate(client, rowEl) {
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
   insState.busy = true;
   var genBtn = rowEl ? rowEl.querySelector('.ins-gen-btn') : null;
+  var genBtnOrigText = genBtn ? genBtn.textContent : 'Gen.';
   if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
   insLog('▶ Generando: ' + client.name, 'info');
   gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId })
     .then(function(r) {
       insState.busy = false;
       if (!r.success) {
-        if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+        if (genBtn) { genBtn.disabled = false; genBtn.textContent = genBtnOrigText; }
         insLog('Error: ' + r.error, 'error');
         return;
       }
@@ -3913,7 +3914,7 @@ function insRunGenerate(client, rowEl) {
     })
     .catch(function(e) {
       insState.busy = false;
-      if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+      if (genBtn) { genBtn.disabled = false; genBtn.textContent = genBtnOrigText; }
       insLog('Error: ' + (e.message || e), 'error');
     });
 }
@@ -3955,6 +3956,7 @@ function insRunGenAll() {
             var badge = targetRow.querySelector('.ins-badge');
             if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
             if (genBtn) genBtn.remove();
+            insAddConfigButtons(targetRow, client);
           }
           for (var ci = 0; ci < insState.clients.length; ci++) {
             if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
