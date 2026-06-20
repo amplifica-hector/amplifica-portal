@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     /* ── Reset & Base ─────────────────────────────────────────────────── */
     html, body { overflow-x: hidden; }
@@ -1351,7 +1352,7 @@
     #view-inspector {
       width: calc(100% + 32px);
       margin: -40px -16px;
-      height: calc(100vh - 56px);
+      height: calc(100vh - 56px - 16px);
       overflow: hidden;
       padding: 8px;
       box-sizing: border-box;
@@ -1471,7 +1472,7 @@
     .ins-log-success { color: #3fb950; }
     .ins-log-error   { color: #f85149; }
     .ins-log-warn    { color: #F7DC4B; }
-    .ins-log-data    { color: #4548FF; }
+    .ins-log-data    { color: #FFFFFF; }
     .ins-log-info    { color: #8b949e; }
     @media (max-width: 767px) {
       #view-inspector { height: auto; }
@@ -1951,6 +1952,10 @@
         <div class="ins-controls">
           <div class="ins-controls-header">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+            <picture style="display:block; margin: 6px 0 2px;">
+              <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
+              <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" style="width:100%; max-width:160px; display:block;">
+            </picture>
             <div class="ins-title">Inspector de Facturas</div>
           </div>
 
@@ -2955,34 +2960,6 @@ $('btn-copy-link').addEventListener('click', function() {
   }
 });
 
-function buildExcelXml(rows, month, year) {
-  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
-    '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n' +
-    '  <Styles><Style ss:ID="h"><Font ss:Bold="1"/></Style></Styles>\n' +
-    '  <Worksheet ss:Name="' + escXmlAttr(month + ' ' + year) + '">\n' +
-    '    <Table>\n' +
-    '      <Column ss:Width="200"/><Column ss:Width="420"/>\n' +
-    '      <Row>\n' +
-    '        <Cell ss:StyleID="h"><Data ss:Type="String">Nombre Seller</Data></Cell>\n' +
-    '        <Cell ss:StyleID="h"><Data ss:Type="String">URL</Data></Cell>\n' +
-    '      </Row>\n';
-  rows.forEach(function(r) {
-    xml += '      <Row>\n' +
-      '        <Cell><Data ss:Type="String">' + escXmlAttr(r.name) + '</Data></Cell>\n' +
-      '        <Cell><Data ss:Type="String">' + escXmlAttr(r.url)  + '</Data></Cell>\n' +
-      '      </Row>\n';
-  });
-  xml += '    </Table>\n  </Worksheet>\n</Workbook>';
-  return xml;
-}
-
-function escXmlAttr(s) {
-  return String(s || '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 $('btn-export-links').addEventListener('click', function() {
   var year  = $('link-year').value;
   var month = $('link-month').value;
@@ -3004,14 +2981,19 @@ $('btn-export-links').addEventListener('click', function() {
   filtered.sort(function(a, b) { return a.client < b.client ? -1 : 1; });
   var baseUrl = 'https://amplifica-hector.github.io/amplifica-portal/';
   var rows = filtered.map(function(t) {
-    return { name: t.client, url: baseUrl + '?token=' + t.token };
+    return [t.client, baseUrl + '?token=' + t.token];
   });
-  var xml = buildExcelXml(rows, month, year);
-  var blob = new Blob(['﻿' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  var wsData = [['Nombre Seller', 'URL']].concat(rows);
+  var ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [{ wch: 36 }, { wch: 80 }];
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, month + ' ' + year);
+  var wbArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  var blob = new Blob([wbArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   var objUrl = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = objUrl;
-  a.download = 'Listado de enlaces de Accesso Periodo - ' + month + ' ' + year + '.xls';
+  a.download = 'Listado de enlaces de Acceso Periodo - ' + month + ' ' + year + '.xlsx';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -3734,16 +3716,20 @@ $('btn-explore').addEventListener('click', function() {
   var btn = $('btn-explore');
   btn.disabled = true; btn.textContent = 'Cargando…';
 
-  gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: folderId })
-    .then(function(r) {
-      btn.disabled = false; btn.textContent = 'Ver documentos';
-      if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los documentos.'); return; }
-      showDocumentView({ client: client, year: year, month: month, files: r.files });
-    })
-    .catch(function() {
-      btn.disabled = false; btn.textContent = 'Ver documentos';
-      showInlineError('explorer-error', 'Error de conexión.');
-    });
+  Promise.all([
+    gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: folderId }),
+    gasGet({ action: 'loadClientConfig', adminCode: state.adminCode, folderId: folderId }, 30000)
+  ]).then(function(results) {
+    btn.disabled = false; btn.textContent = 'Ver documentos';
+    var r   = results[0];
+    var cfg = results[1];
+    if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los documentos.'); return; }
+    var configData = (cfg && cfg.success && cfg.invoices) ? { invoices: cfg.invoices, meta: cfg.meta } : null;
+    showDocumentView({ client: client, year: year, month: month, files: r.files, configData: configData });
+  }).catch(function() {
+    btn.disabled = false; btn.textContent = 'Ver documentos';
+    showInlineError('explorer-error', 'Error de conexión.');
+  });
 });
 
 function alignDashHeader() {

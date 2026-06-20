@@ -2,9 +2,11 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0;url=../?admin=1">
   <title>Redirigiendo…</title>
-  <script>window.location.replace('../?admin=1');</script>
+  <script>
+    var token = new URLSearchParams(window.location.search).get('token');
+    window.location.replace(token ? '../?token=' + encodeURIComponent(token) : '../?admin=1');
+  </script>
 </head>
 <body></body>
 </html>
