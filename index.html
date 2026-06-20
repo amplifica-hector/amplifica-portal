@@ -1351,14 +1351,20 @@
     #view-inspector {
       width: calc(100% + 32px);
       margin: -40px -16px;
-      min-height: calc(100vh - 56px);
+      height: calc(100vh - 56px);
+      overflow: hidden;
+      padding: 8px;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
     }
     .ins-wrap {
       display: flex;
       flex: 1;
-      min-height: calc(100vh - 56px);
+      min-height: 0;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
     }
     .ins-controls {
       width: 272px;
@@ -1443,19 +1449,19 @@
     .ins-hint { font-size: 11px; color: var(--muted); line-height: 1.4; }
     /* Console panel */
     .ins-console-wrap {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #0e1117;
+      flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #1D1D1F;
     }
     .ins-console-header {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 7px 14px; background: #161b22; border-bottom: 1px solid #30363d; flex-shrink: 0;
+      padding: 7px 14px; background: #121755; border-bottom: 1px solid #1a1f6a; flex-shrink: 0;
     }
-    .ins-console-header span { color: #8b949e; font-size: 12px; font-weight: 500; }
+    .ins-console-header span { color: #E1E0E0; font-size: 12px; font-weight: 500; }
     .ins-console-clear {
-      font-size: 11px; padding: 2px 8px; border: 1px solid #30363d; border-radius: 4px;
-      background: transparent; color: #8b949e; cursor: pointer; font-family: inherit;
+      font-size: 11px; padding: 2px 8px; border: 1px solid rgba(225,224,224,0.25); border-radius: 4px;
+      background: transparent; color: rgba(225,224,224,0.65); cursor: pointer; font-family: inherit;
       transition: border-color 0.12s, color 0.12s;
     }
-    .ins-console-clear:hover { border-color: #8b949e; color: #c9d1d9; }
+    .ins-console-clear:hover { border-color: #E1E0E0; color: #E1E0E0; }
     .ins-console {
       flex: 1; overflow-y: auto; padding: 10px 14px;
       font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.65;
@@ -1464,11 +1470,11 @@
     .ins-log         { color: #8b949e; display: block; }
     .ins-log-success { color: #3fb950; }
     .ins-log-error   { color: #f85149; }
-    .ins-log-warn    { color: #d29922; }
-    .ins-log-data    { color: #79c0ff; }
+    .ins-log-warn    { color: #F7DC4B; }
+    .ins-log-data    { color: #4548FF; }
     .ins-log-info    { color: #8b949e; }
     @media (max-width: 767px) {
-      #view-inspector { min-height: auto; }
+      #view-inspector { height: auto; }
       .ins-wrap { flex-direction: column; }
       .ins-controls { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); max-height: 48vh; }
       .ins-console-wrap { min-height: 280px; }
@@ -1793,6 +1799,13 @@
               <div class="gap-sm"></div>
               <div id="link-gen-status" class="msg-success hidden"></div>
             </div>
+            <hr class="divider" style="margin-top:16px;">
+            <div class="form-label" style="margin-bottom:4px;">Exportar listado del período</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4;">
+              Descarga los enlaces de todos los sellers del mes seleccionado.
+            </div>
+            <button class="btn btn-outline btn-block" id="btn-export-links">↓ Exportar como Excel</button>
+            <div id="link-export-msg" class="hidden" style="margin-top:6px;font-size:12px;"></div>
           </div>
         </div>
       </div>
@@ -2877,6 +2890,8 @@ function buildCascadingSelects(tokens, yearSelId, monthSelId, clientSelId, clien
 
 // ── Link Generator ─────────────────────────────────────────────────────────────
 
+var allLinkTokens = [];
+
 elBtnLinkGen.addEventListener('click', function() {
   showView('view-link-gen');
   $('link-gen-loading').classList.remove('hidden');
@@ -2888,6 +2903,7 @@ elBtnLinkGen.addEventListener('click', function() {
     .then(function(r) {
       $('link-gen-loading').classList.add('hidden');
       if (!r.success) { showInlineError('link-gen-error', r.error || 'Error al cargar los datos.'); return; }
+      allLinkTokens = r.tokens;
       buildCascadingSelects(r.tokens, 'link-year', 'link-month', 'link-client', 'link-client-search', 'link-client-drop');
       $('link-gen-form').classList.remove('hidden');
     })
@@ -2937,6 +2953,72 @@ $('btn-copy-link').addEventListener('click', function() {
     btn.textContent = '✓ Copiado';
     setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
   }
+});
+
+function buildExcelXml(rows, month, year) {
+  var xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"\n' +
+    '  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n' +
+    '  <Styles><Style ss:ID="h"><Font ss:Bold="1"/></Style></Styles>\n' +
+    '  <Worksheet ss:Name="' + escXmlAttr(month + ' ' + year) + '">\n' +
+    '    <Table>\n' +
+    '      <Column ss:Width="200"/><Column ss:Width="420"/>\n' +
+    '      <Row>\n' +
+    '        <Cell ss:StyleID="h"><Data ss:Type="String">Nombre Seller</Data></Cell>\n' +
+    '        <Cell ss:StyleID="h"><Data ss:Type="String">URL</Data></Cell>\n' +
+    '      </Row>\n';
+  rows.forEach(function(r) {
+    xml += '      <Row>\n' +
+      '        <Cell><Data ss:Type="String">' + escXmlAttr(r.name) + '</Data></Cell>\n' +
+      '        <Cell><Data ss:Type="String">' + escXmlAttr(r.url)  + '</Data></Cell>\n' +
+      '      </Row>\n';
+  });
+  xml += '    </Table>\n  </Worksheet>\n</Workbook>';
+  return xml;
+}
+
+function escXmlAttr(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+$('btn-export-links').addEventListener('click', function() {
+  var year  = $('link-year').value;
+  var month = $('link-month').value;
+  var msgEl = $('link-export-msg');
+  msgEl.classList.add('hidden');
+  if (!year || !month) {
+    msgEl.style.color = 'var(--error)';
+    msgEl.textContent = 'Selecciona año y mes primero.';
+    msgEl.classList.remove('hidden'); return;
+  }
+  var filtered = (allLinkTokens || []).filter(function(t) {
+    return t.year === year && t.month === month;
+  });
+  if (!filtered.length) {
+    msgEl.style.color = 'var(--muted)';
+    msgEl.textContent = 'No hay tokens para ' + month + ' ' + year + '.';
+    msgEl.classList.remove('hidden'); return;
+  }
+  filtered.sort(function(a, b) { return a.client < b.client ? -1 : 1; });
+  var baseUrl = window.location.href.split('?')[0];
+  var rows = filtered.map(function(t) {
+    return { name: t.client, url: baseUrl + '?token=' + t.token };
+  });
+  var xml = buildExcelXml(rows, month, year);
+  var blob = new Blob(['﻿' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  var objUrl = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = objUrl;
+  a.download = 'Listado de enlaces de Accesso Periodo - ' + month + ' ' + year + '.xls';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(objUrl);
+  msgEl.style.color = 'var(--muted)';
+  msgEl.textContent = '✓ ' + filtered.length + ' enlace(s) exportados.';
+  msgEl.classList.remove('hidden');
 });
 
 // ── Token Renewal ──────────────────────────────────────────────────────────────
