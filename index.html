@@ -1414,6 +1414,19 @@
     }
     .ins-gen-btn:hover     { background: rgba(18,23,85,0.08); }
     .ins-gen-btn:disabled  { opacity: 0.5; cursor: not-allowed; }
+    .ins-row-btn {
+      font-size: 10px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px;
+      background: transparent; color: var(--muted); cursor: pointer; flex-shrink: 0;
+      font-family: inherit; transition: border-color 0.12s, color 0.12s;
+    }
+    .ins-row-btn:hover    { border-color: var(--blue); color: var(--blue); }
+    .ins-row-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ins-search {
+      width: 100%; box-sizing: border-box; font-size: 11px; padding: 4px 8px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--white); color: var(--text); font-family: inherit; outline: none;
+    }
+    .ins-search:focus { border-color: var(--blue); }
     .ins-client-context    { font-size: 11px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid var(--border); }
     .ins-client-context strong { color: var(--text); }
     .ins-pdf-list { display: flex; flex-direction: column; gap: 3px; max-height: 52vh; overflow-y: auto; }
@@ -1946,13 +1959,9 @@
               <select id="ins-month" class="ins-select"></select>
             </div>
             <button class="btn btn-primary btn-block" id="ins-btn-verify">Verificar período</button>
+            <input id="ins-search-client" class="ins-search hidden" placeholder="Buscar cliente…" autocomplete="off">
             <div id="ins-client-status" class="ins-client-status hidden"></div>
             <button id="ins-btn-gen-all" class="btn btn-outline btn-block hidden">Generar todos los faltantes</button>
-            <div id="ins-selected-actions" class="hidden" style="display:none;flex-direction:column;gap:4px;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
-              <div id="ins-selected-label" style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-              <button class="btn btn-outline btn-block" id="ins-btn-view-config">Ver config actual</button>
-              <button class="btn btn-outline btn-block" id="ins-btn-regen">Regenerar config</button>
-            </div>
           </div>
 
           <!-- Tab: PDF Inspector -->
@@ -3679,7 +3688,8 @@ function showInspector() {
   $('ins-client-status').classList.add('hidden');
   $('ins-btn-gen-all').classList.add('hidden');
   $('ins-apply-rename-wrap').classList.add('hidden');
-  $('ins-selected-actions').style.display = 'none';
+  $('ins-search-client').value = '';
+  $('ins-search-client').classList.add('hidden');
   $('ins-pdf-list').innerHTML = '';
   $('ins-client-label-pdf').textContent    = '— ninguno —';
   $('ins-client-label-items').textContent  = '— ninguno —';
@@ -3726,13 +3736,6 @@ function insSetClient(client) {
   $('ins-client-label-items').textContent  = client.name;
   $('ins-client-label-rename').textContent = client.name;
   insLoadPDFs(client.folderId);
-  // Selected-client actions panel
-  var actEl = $('ins-selected-actions');
-  actEl.style.display = 'flex';
-  $('ins-selected-label').textContent = client.name;
-  var viewBtn = $('ins-btn-view-config');
-  if (client.hasConfig) viewBtn.style.display = '';
-  else                  viewBtn.style.display = 'none';
 }
 
 function insRunLoadConfig() {
@@ -3797,12 +3800,40 @@ function insRunInspectPeriod() {
     });
 }
 
+function insAddConfigButtons(row, client) {
+  var verBtn = document.createElement('button');
+  verBtn.className = 'ins-row-btn';
+  verBtn.textContent = 'Ver';
+  verBtn.title = 'Cargar invoices.json en consola';
+  verBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+    row.classList.add('ins-selected');
+    insSetClient(client);
+    insRunLoadConfig();
+  });
+  var regBtn = document.createElement('button');
+  regBtn.className = 'ins-gen-btn';
+  regBtn.textContent = 'Reg.';
+  regBtn.title = 'Regenerar invoices.json';
+  regBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+    row.classList.add('ins-selected');
+    insSetClient(client);
+    insRunGenerate(client, row);
+  });
+  row.appendChild(verBtn);
+  row.appendChild(regBtn);
+}
+
 function renderInsClientList(clients) {
   var el = $('ins-client-status');
   el.innerHTML = '';
   if (!clients || clients.length === 0) {
     el.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:4px;">Sin clientes en este período.</div>';
     el.classList.remove('hidden');
+    $('ins-search-client').classList.add('hidden');
     return;
   }
   var hasMissing = false;
@@ -3811,20 +3842,26 @@ function renderInsClientList(clients) {
       var row = document.createElement('div');
       row.className = 'ins-client-row' + (client.hasConfig ? '' : ' ins-missing');
       row.dataset.folderId = client.folderId;
-      var badgeHtml   = client.hasConfig ? '<span class="ins-badge ins-badge-ok">✓</span>' : '<span class="ins-badge ins-badge-miss">✗</span>';
-      var pdfHtml     = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
-      var genHtml     = client.hasConfig ? '' : '<button class="ins-gen-btn">Gen.</button>';
-      row.innerHTML   = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml + genHtml;
+      row.dataset.name = client.name;
+      var badgeHtml = client.hasConfig
+        ? '<span class="ins-badge ins-badge-ok">✓</span>'
+        : '<span class="ins-badge ins-badge-miss">✗</span>';
+      var pdfHtml = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
+      row.innerHTML = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml;
       row.addEventListener('click', function(e) {
-        if (e.target.classList.contains('ins-gen-btn')) return;
+        if (e.target.tagName === 'BUTTON') return;
         document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
         row.classList.add('ins-selected');
         insSetClient(client);
         insLog('Cliente: ' + client.name, 'info');
       });
-      var genBtn = row.querySelector('.ins-gen-btn');
-      if (genBtn) {
+      if (client.hasConfig) {
+        insAddConfigButtons(row, client);
+      } else {
         hasMissing = true;
+        var genBtn = document.createElement('button');
+        genBtn.className = 'ins-gen-btn';
+        genBtn.textContent = 'Gen.';
         genBtn.addEventListener('click', function(e) {
           e.stopPropagation();
           document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
@@ -3832,11 +3869,13 @@ function renderInsClientList(clients) {
           insSetClient(client);
           insRunGenerate(client, row);
         });
+        row.appendChild(genBtn);
       }
       el.appendChild(row);
     })(clients[i]);
   }
   el.classList.remove('hidden');
+  $('ins-search-client').classList.remove('hidden');
   if (hasMissing) $('ins-btn-gen-all').classList.remove('hidden');
   else            $('ins-btn-gen-all').classList.add('hidden');
 }
@@ -3865,6 +3904,7 @@ function insRunGenerate(client, rowEl) {
         var badge = rowEl.querySelector('.ins-badge');
         if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
         if (genBtn) genBtn.remove();
+        insAddConfigButtons(rowEl, client);
       }
       for (var ci = 0; ci < insState.clients.length; ci++) {
         if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
@@ -4095,11 +4135,19 @@ function insRunApplyRename() {
 
 // ── Inspector wire-up ─────────────────────────────────────────────────────────
 
+function insFilterClients(val) {
+  var rows = document.querySelectorAll('.ins-client-row');
+  var q    = val.toLowerCase();
+  rows.forEach(function(r) {
+    var name = (r.dataset.name || '').toLowerCase();
+    r.style.display = (!q || name.indexOf(q) >= 0) ? '' : 'none';
+  });
+}
+
+$('ins-search-client').addEventListener('input', function() { insFilterClients(this.value); });
 $('btn-inspector').addEventListener('click', showInspector);
 $('ins-btn-verify').addEventListener('click', insRunInspectPeriod);
 $('ins-btn-gen-all').addEventListener('click', insRunGenAll);
-$('ins-btn-view-config').addEventListener('click', insRunLoadConfig);
-$('ins-btn-regen').addEventListener('click', function() { if (insState.client) insRunGenerate(insState.client, null); });
 $('ins-btn-extract').addEventListener('click', insRunExtract);
 $('ins-btn-plan-rename').addEventListener('click', insRunPlanRename);
 $('ins-btn-apply-rename').addEventListener('click', insRunApplyRename);
