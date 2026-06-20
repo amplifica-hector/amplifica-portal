@@ -3744,7 +3744,7 @@ function insRunLoadConfig(btnEl) {
   insState.busy = true;
   if (btnEl) btnEl.disabled = true;
   insLog('Cargando config: ' + insState.client.name, 'info');
-  gasGet({ action: 'loadClientConfig', adminCode: state.adminCode, folderId: insState.client.folderId })
+  gasGet({ action: 'loadClientConfig', adminCode: state.adminCode, folderId: insState.client.folderId }, 30000)
     .then(function(r) {
       insState.busy = false;
       if (btnEl) btnEl.disabled = false;
@@ -3782,7 +3782,7 @@ function insRunInspectPeriod() {
   $('ins-btn-gen-all').classList.add('hidden');
   insClearConsole();
   insLog('Verificando ' + month + ' ' + year + '…', 'info');
-  gasGet({ action: 'inspectPeriod', adminCode: state.adminCode, year: year, month: month })
+  gasGet({ action: 'inspectPeriod', adminCode: state.adminCode, year: year, month: month }, 30000)
     .then(function(r) {
       insState.busy = false;
       $('ins-btn-verify').disabled = false;
@@ -3887,30 +3887,69 @@ function insRunGenerate(client, rowEl) {
   var genBtnOrigText = genBtn ? genBtn.textContent : 'Gen.';
   if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
   insLog('▶ Generando: ' + client.name, 'info');
-  gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId })
+  gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: client.folderId }, 30000)
     .then(function(r) {
-      insState.busy = false;
-      if (!r.success) {
+      if (!r.success) throw new Error(r.error);
+      var pdfs = (r.files || []).filter(function(f) { return f.mimeType === 'application/pdf'; });
+      pdfs.sort(function(a, b) { return a.name < b.name ? -1 : 1; });
+      if (pdfs.length === 0) {
+        insState.busy = false;
         if (genBtn) { genBtn.disabled = false; genBtn.textContent = genBtnOrigText; }
-        insLog('Error: ' + r.error, 'error');
+        insLog('Sin PDFs en la carpeta.', 'warn');
         return;
       }
-      var logs = r.logs || [];
-      for (var i = 0; i < logs.length; i++) {
-        var t = logs[i].indexOf('ERROR') === 0 ? 'error' : logs[i].indexOf('OK') === 0 ? 'success' : 'info';
-        insLog('  ' + logs[i], t);
-      }
-      insLog('✓ ' + client.name + ' — ' + r.invoiceCount + ' factura(s)', 'success');
-      if (rowEl) {
-        var badge = rowEl.querySelector('.ins-badge');
-        if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
-        if (genBtn) genBtn.remove();
-        insAddConfigButtons(rowEl, client);
-      }
-      for (var ci = 0; ci < insState.clients.length; ci++) {
-        if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
-      }
-      if (!insState.clients.filter(function(c) { return !c.hasConfig; }).length) $('ins-btn-gen-all').classList.add('hidden');
+      insLog('Procesando ' + pdfs.length + ' PDF(s) en paralelo…', 'info');
+      var done = 0;
+      var total = pdfs.length;
+      var promises = pdfs.map(function(pdf) {
+        return gasGet({ action: 'parseSinglePDF', adminCode: state.adminCode, fileId: pdf.id }, 60000)
+          .then(function(res) {
+            done++;
+            if (res.success && res.invoice) {
+              var inv = res.invoice;
+              var tc = inv.tipo === 'NOTA CRÉDITO ELECTRÓNICA' ? 'NOTA' : inv.tipo === 'LIQUIDACIÓN FACTURA' ? 'LIQ' : 'FAC';
+              insLog('  [' + done + '/' + total + '] OK [' + tc + ' #' + (inv.folio || '?') + ']  Neto: $' + (inv.neto || 0), 'success');
+              return inv;
+            }
+            insLog('  [' + done + '/' + total + '] ERROR ' + pdf.name + ': ' + (res.error || 'desconocido'), 'error');
+            return null;
+          })
+          .catch(function(e) {
+            done++;
+            insLog('  [' + done + '/' + total + '] ERROR ' + pdf.name + ': ' + (e.message || e), 'error');
+            return null;
+          });
+      });
+      return Promise.all(promises).then(function(invoices) {
+        var valid = invoices.filter(Boolean);
+        if (valid.length === 0) {
+          insState.busy = false;
+          if (genBtn) { genBtn.disabled = false; genBtn.textContent = genBtnOrigText; }
+          insLog('No se pudo procesar ningún PDF.', 'error');
+          return;
+        }
+        insLog('Guardando config (' + valid.length + ' doc(s))…', 'info');
+        return gasGet({ action: 'saveClientConfig', adminCode: state.adminCode, folderId: client.folderId, invoices: JSON.stringify(valid) }, 30000)
+          .then(function(saveR) {
+            insState.busy = false;
+            if (!saveR.success) {
+              if (genBtn) { genBtn.disabled = false; genBtn.textContent = genBtnOrigText; }
+              insLog('Error al guardar: ' + saveR.error, 'error');
+              return;
+            }
+            insLog('✓ ' + client.name + ' — ' + saveR.invoiceCount + ' factura(s)', 'success');
+            if (rowEl) {
+              var badge = rowEl.querySelector('.ins-badge');
+              if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
+              if (genBtn) genBtn.remove();
+              insAddConfigButtons(rowEl, client);
+            }
+            for (var ci = 0; ci < insState.clients.length; ci++) {
+              if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
+            }
+            if (!insState.clients.filter(function(c) { return !c.hasConfig; }).length) $('ins-btn-gen-all').classList.add('hidden');
+          });
+      });
     })
     .catch(function(e) {
       insState.busy = false;
@@ -3939,7 +3978,7 @@ function insRunGenAll() {
     var genBtn = targetRow ? targetRow.querySelector('.ins-gen-btn') : null;
     if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
     insLog('[' + (idx + 1) + '/' + missing.length + '] ' + client.name, 'info');
-    gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId })
+    gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId }, 120000)
       .then(function(r) {
         insState.busy = false;
         if (!r.success) {
@@ -4008,7 +4047,7 @@ function insRunInspectPDF(fileId, filename, btnEl) {
   insState.busy = true;
   if (btnEl) { btnEl.disabled = true; btnEl.textContent = '…'; }
   insLog('Inspeccionando: ' + filename, 'info');
-  gasGet({ action: 'inspectPDF', adminCode: state.adminCode, fileId: fileId })
+  gasGet({ action: 'inspectPDF', adminCode: state.adminCode, fileId: fileId }, 60000)
     .then(function(r) {
       insState.busy = false;
       if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Ver texto'; }
@@ -4035,7 +4074,7 @@ function insRunExtract() {
   insState.busy = true;
   $('ins-btn-extract').disabled = true;
   insLog('Extrayendo conceptos: ' + insState.client.name, 'info');
-  gasGet({ action: 'extractFolderItems', adminCode: state.adminCode, folderId: insState.client.folderId })
+  gasGet({ action: 'extractFolderItems', adminCode: state.adminCode, folderId: insState.client.folderId }, 120000)
     .then(function(r) {
       insState.busy = false;
       $('ins-btn-extract').disabled = false;
@@ -4068,7 +4107,7 @@ function insRunPlanRename() {
   $('ins-btn-plan-rename').disabled = true;
   $('ins-apply-rename-wrap').classList.add('hidden');
   insLog('Planificando renombrado: ' + insState.client.name, 'info');
-  gasGet({ action: 'planRenaming', adminCode: state.adminCode, folderId: insState.client.folderId })
+  gasGet({ action: 'planRenaming', adminCode: state.adminCode, folderId: insState.client.folderId }, 120000)
     .then(function(r) {
       insState.busy = false;
       $('ins-btn-plan-rename').disabled = false;
