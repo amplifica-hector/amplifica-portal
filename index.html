@@ -1347,6 +1347,119 @@
 
     canvas { max-width: 100%; }
 
+    /* ── Inspector de Facturas ────────────────────────────────────────── */
+    #view-inspector {
+      width: calc(100% + 32px);
+      margin: -40px -16px;
+      min-height: calc(100vh - 56px);
+      display: flex;
+      flex-direction: column;
+    }
+    .ins-wrap {
+      display: flex;
+      flex: 1;
+      min-height: calc(100vh - 56px);
+    }
+    .ins-controls {
+      width: 272px;
+      min-width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px;
+      gap: 10px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--white);
+    }
+    .ins-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+    .ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); margin-top: 4px; }
+    .ins-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .ins-tab {
+      flex: 1; padding: 5px 2px; font-size: 11px; font-family: inherit; font-weight: 500;
+      cursor: pointer; border: none; background: transparent; color: var(--muted);
+      transition: background 0.13s, color 0.13s;
+    }
+    .ins-tab.active { background: var(--blue); color: #fff; }
+    .ins-tab:not(.active):hover { background: var(--bg); color: var(--text); }
+    .ins-tab-panel { display: flex; flex-direction: column; gap: 8px; }
+    .ins-tab-panel.hidden { display: none; }
+    .ins-field-group { display: flex; flex-direction: column; gap: 3px; }
+    .ins-label { font-size: 12px; font-weight: 500; color: var(--text); }
+    .ins-select {
+      height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-family: inherit; font-size: 13px; color: var(--text); background: var(--white); outline: none;
+      transition: border-color 0.13s;
+    }
+    .ins-select:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(18,23,85,0.1); }
+    .ins-client-status {
+      display: flex; flex-direction: column; gap: 1px; max-height: 38vh; overflow-y: auto;
+      border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px;
+    }
+    .ins-client-row {
+      display: flex; align-items: center; gap: 5px; padding: 4px 5px;
+      border-radius: 4px; cursor: pointer; font-size: 12px; transition: background 0.1s;
+    }
+    .ins-client-row:hover   { background: var(--bg); }
+    .ins-client-row.ins-selected { background: #eef2ff; }
+    .ins-badge { font-size: 11px; font-weight: 700; width: 14px; text-align: center; flex-shrink: 0; }
+    .ins-badge-ok   { color: #3fb950; }
+    .ins-badge-miss { color: #f85149; }
+    .ins-client-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ins-pdf-count { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+    .ins-gen-btn {
+      font-size: 10px; padding: 2px 7px; border: 1px solid var(--blue); border-radius: 4px;
+      background: transparent; color: var(--blue); cursor: pointer; flex-shrink: 0;
+      font-family: inherit; transition: background 0.12s;
+    }
+    .ins-gen-btn:hover     { background: rgba(18,23,85,0.08); }
+    .ins-gen-btn:disabled  { opacity: 0.5; cursor: not-allowed; }
+    .ins-client-context    { font-size: 11px; color: var(--muted); padding: 5px 0; border-bottom: 1px solid var(--border); }
+    .ins-client-context strong { color: var(--text); }
+    .ins-pdf-list { display: flex; flex-direction: column; gap: 3px; max-height: 52vh; overflow-y: auto; }
+    .ins-pdf-row  { display: flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 0; }
+    .ins-pdf-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .ins-pdf-btn {
+      font-size: 10px; padding: 2px 7px; border: 1px solid var(--border); border-radius: 4px;
+      background: transparent; color: var(--muted); cursor: pointer; flex-shrink: 0;
+      font-family: inherit; transition: border-color 0.12s, color 0.12s;
+    }
+    .ins-pdf-btn:hover    { border-color: var(--blue); color: var(--blue); }
+    .ins-pdf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ins-hint { font-size: 11px; color: var(--muted); line-height: 1.4; }
+    /* Console panel */
+    .ins-console-wrap {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #0e1117;
+    }
+    .ins-console-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 14px; background: #161b22; border-bottom: 1px solid #30363d; flex-shrink: 0;
+    }
+    .ins-console-header span { color: #8b949e; font-size: 12px; font-weight: 500; }
+    .ins-console-clear {
+      font-size: 11px; padding: 2px 8px; border: 1px solid #30363d; border-radius: 4px;
+      background: transparent; color: #8b949e; cursor: pointer; font-family: inherit;
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .ins-console-clear:hover { border-color: #8b949e; color: #c9d1d9; }
+    .ins-console {
+      flex: 1; overflow-y: auto; padding: 10px 14px;
+      font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.65;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    .ins-log         { color: #8b949e; display: block; }
+    .ins-log-success { color: #3fb950; }
+    .ins-log-error   { color: #f85149; }
+    .ins-log-warn    { color: #d29922; }
+    .ins-log-data    { color: #79c0ff; }
+    .ins-log-info    { color: #8b949e; }
+    @media (max-width: 767px) {
+      #view-inspector { min-height: auto; }
+      .ins-wrap { flex-direction: column; }
+      .ins-controls { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); max-height: 48vh; }
+      .ins-console-wrap { min-height: 280px; }
+    }
+
     /* ── Dark Mode ────────────────────────────────────────────────────── */
     @media (prefers-color-scheme: dark) {
       :root {
@@ -1600,6 +1713,10 @@
                 <button class="btn btn-outline btn-block" id="btn-explorer">
                   Explorador de casos
                 </button>
+                <div class="gap-sm"></div>
+                <button class="btn btn-outline btn-block" id="btn-inspector">
+                  Inspector de Facturas
+                </button>
               </div>
             </div>
           </div>
@@ -1796,6 +1913,78 @@
       </div>
     </div>
 
+    <!-- ── View: Inspector de Facturas ──────────────────────────────── -->
+    <div id="view-inspector" class="hidden">
+      <div class="ins-wrap">
+
+        <!-- LEFT CONTROLS -->
+        <div class="ins-controls">
+          <div class="ins-controls-header">
+            <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+            <div class="ins-title">Inspector de Facturas</div>
+          </div>
+
+          <!-- Tool tabs -->
+          <div class="ins-tabs">
+            <button class="ins-tab active" data-tab="config">Config</button>
+            <button class="ins-tab" data-tab="pdf">PDF</button>
+            <button class="ins-tab" data-tab="items">Extractor</button>
+            <button class="ins-tab" data-tab="rename">Renombrador</button>
+          </div>
+
+          <!-- Tab: Config — period inspection + generation -->
+          <div class="ins-tab-panel" id="ins-panel-config">
+            <div class="ins-field-group">
+              <label class="ins-label">Año</label>
+              <select id="ins-year" class="ins-select"></select>
+            </div>
+            <div class="ins-field-group">
+              <label class="ins-label">Mes</label>
+              <select id="ins-month" class="ins-select"></select>
+            </div>
+            <button class="btn btn-primary btn-block" id="ins-btn-verify">Verificar período</button>
+            <div id="ins-client-status" class="ins-client-status hidden"></div>
+            <button id="ins-btn-gen-all" class="btn btn-outline btn-block hidden">Generar todos los faltantes</button>
+          </div>
+
+          <!-- Tab: PDF Inspector -->
+          <div class="ins-tab-panel hidden" id="ins-panel-pdf">
+            <div class="ins-client-context">Cliente: <strong id="ins-client-label-pdf">— ninguno —</strong></div>
+            <div class="ins-hint">Selecciona un cliente en Config para cargar sus PDFs.</div>
+            <div id="ins-pdf-list" class="ins-pdf-list"></div>
+          </div>
+
+          <!-- Tab: Extractor de conceptos -->
+          <div class="ins-tab-panel hidden" id="ins-panel-items">
+            <div class="ins-client-context">Cliente: <strong id="ins-client-label-items">— ninguno —</strong></div>
+            <div class="ins-hint">Extrae todos los conceptos de los PDFs del cliente seleccionado.</div>
+            <button class="btn btn-primary btn-block" id="ins-btn-extract">Extraer conceptos</button>
+          </div>
+
+          <!-- Tab: Renombrador -->
+          <div class="ins-tab-panel hidden" id="ins-panel-rename">
+            <div class="ins-client-context">Cliente: <strong id="ins-client-label-rename">— ninguno —</strong></div>
+            <div class="ins-hint">Renombra PDFs según grupos de servicio configurados.</div>
+            <button class="btn btn-primary btn-block" id="ins-btn-plan-rename">Planificar renombrado</button>
+            <div id="ins-apply-rename-wrap" class="hidden">
+              <div class="gap-sm"></div>
+              <button class="btn btn-yellow btn-block" id="ins-btn-apply-rename">Aplicar renombrado</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT CONSOLE -->
+        <div class="ins-console-wrap">
+          <div class="ins-console-header">
+            <span>Consola</span>
+            <button class="ins-console-clear" id="ins-btn-clear">Limpiar</button>
+          </div>
+          <div id="ins-console" class="ins-console"></div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -1908,7 +2097,7 @@ var elBtnExplorer        = $('btn-explorer');
 
 // ── View switcher ──────────────────────────────────────────────────────────────
 function showView(viewId) {
-  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs', 'view-link-gen', 'view-renewal', 'view-explorer'];
+  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs', 'view-link-gen', 'view-renewal', 'view-explorer', 'view-inspector'];
   for (var i = 0; i < views.length; i++) {
     $(views[i]).classList.add('hidden');
   }
@@ -3461,6 +3650,422 @@ function alignDashHeader() {
 }
 
 window.addEventListener('resize', alignDashHeader);
+
+// ── Inspector de Facturas ───────────────────────────────────────────────────────
+
+var insState = {
+  client:     null,   // {name, folderId, hasConfig}
+  clients:    [],
+  renamePlan: [],
+  pdfFiles:   [],
+  busy:       false
+};
+
+function showInspector() {
+  showView('view-inspector');
+  $('ins-console').innerHTML = '';
+  insState.client     = null;
+  insState.clients    = [];
+  insState.renamePlan = [];
+  insState.pdfFiles   = [];
+  $('ins-client-status').classList.add('hidden');
+  $('ins-btn-gen-all').classList.add('hidden');
+  $('ins-apply-rename-wrap').classList.add('hidden');
+  $('ins-pdf-list').innerHTML = '';
+  $('ins-client-label-pdf').textContent    = '— ninguno —';
+  $('ins-client-label-items').textContent  = '— ninguno —';
+  $('ins-client-label-rename').textContent = '— ninguno —';
+  // Populate year select
+  var yearSel = $('ins-year');
+  yearSel.innerHTML = '';
+  var currentYear = new Date().getFullYear();
+  for (var y = currentYear + 1; y >= 2024; y--) {
+    var opt = document.createElement('option');
+    opt.value = opt.textContent = String(y);
+    yearSel.appendChild(opt);
+  }
+  yearSel.value = String(currentYear);
+  // Populate month select
+  var monthSel = $('ins-month');
+  monthSel.innerHTML = '';
+  for (var m = 0; m < MONTHS_ES.length; m++) {
+    var opt2 = document.createElement('option');
+    opt2.value = opt2.textContent = MONTHS_ES[m];
+    monthSel.appendChild(opt2);
+  }
+  monthSel.value = MONTHS_ES[new Date().getMonth()];
+}
+
+function insLog(msg, type) {
+  var el  = $('ins-console');
+  var now = new Date();
+  var ts  = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+  var line = document.createElement('span');
+  line.className = 'ins-log ins-log-' + (type || 'info');
+  line.textContent = '[' + ts + '] ' + msg + '\n';
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+function insClearConsole() {
+  $('ins-console').innerHTML = '';
+}
+
+function insSetClient(client) {
+  insState.client = client;
+  $('ins-client-label-pdf').textContent    = client.name;
+  $('ins-client-label-items').textContent  = client.name;
+  $('ins-client-label-rename').textContent = client.name;
+  insLoadPDFs(client.folderId);
+}
+
+function insRunInspectPeriod() {
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  var year  = $('ins-year').value;
+  var month = $('ins-month').value;
+  if (!year || !month) return;
+  insState.busy = true;
+  $('ins-btn-verify').disabled = true;
+  $('ins-client-status').classList.add('hidden');
+  $('ins-btn-gen-all').classList.add('hidden');
+  insClearConsole();
+  insLog('Verificando ' + month + ' ' + year + '…', 'info');
+  gasGet({ action: 'inspectPeriod', adminCode: state.adminCode, year: year, month: month })
+    .then(function(r) {
+      insState.busy = false;
+      $('ins-btn-verify').disabled = false;
+      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
+      insState.clients = r.clients;
+      renderInsClientList(r.clients);
+      var missing = r.clients.filter(function(c) { return !c.hasConfig; }).length;
+      insLog(r.clients.length + ' cliente(s). ' + missing + ' sin config.', missing > 0 ? 'warn' : 'success');
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      $('ins-btn-verify').disabled = false;
+      insLog('Error de conexión: ' + (e.message || e), 'error');
+    });
+}
+
+function renderInsClientList(clients) {
+  var el = $('ins-client-status');
+  el.innerHTML = '';
+  if (!clients || clients.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:11px;padding:4px;">Sin clientes en este período.</div>';
+    el.classList.remove('hidden');
+    return;
+  }
+  var hasMissing = false;
+  for (var i = 0; i < clients.length; i++) {
+    (function(client) {
+      var row = document.createElement('div');
+      row.className = 'ins-client-row' + (client.hasConfig ? '' : ' ins-missing');
+      row.dataset.folderId = client.folderId;
+      var badgeHtml   = client.hasConfig ? '<span class="ins-badge ins-badge-ok">✓</span>' : '<span class="ins-badge ins-badge-miss">✗</span>';
+      var pdfHtml     = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
+      var genHtml     = client.hasConfig ? '' : '<button class="ins-gen-btn">Gen.</button>';
+      row.innerHTML   = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml + genHtml;
+      row.addEventListener('click', function(e) {
+        if (e.target.classList.contains('ins-gen-btn')) return;
+        document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+        row.classList.add('ins-selected');
+        insSetClient(client);
+        insLog('Cliente: ' + client.name, 'info');
+      });
+      var genBtn = row.querySelector('.ins-gen-btn');
+      if (genBtn) {
+        hasMissing = true;
+        genBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+          row.classList.add('ins-selected');
+          insSetClient(client);
+          insRunGenerate(client, row);
+        });
+      }
+      el.appendChild(row);
+    })(clients[i]);
+  }
+  el.classList.remove('hidden');
+  if (hasMissing) $('ins-btn-gen-all').classList.remove('hidden');
+  else            $('ins-btn-gen-all').classList.add('hidden');
+}
+
+function insRunGenerate(client, rowEl) {
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  var genBtn = rowEl ? rowEl.querySelector('.ins-gen-btn') : null;
+  if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
+  insLog('▶ Generando: ' + client.name, 'info');
+  gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId })
+    .then(function(r) {
+      insState.busy = false;
+      if (!r.success) {
+        if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+        insLog('Error: ' + r.error, 'error');
+        return;
+      }
+      var logs = r.logs || [];
+      for (var i = 0; i < logs.length; i++) {
+        var t = logs[i].indexOf('ERROR') === 0 ? 'error' : logs[i].indexOf('OK') === 0 ? 'success' : 'info';
+        insLog('  ' + logs[i], t);
+      }
+      insLog('✓ ' + client.name + ' — ' + r.invoiceCount + ' factura(s)', 'success');
+      if (rowEl) {
+        var badge = rowEl.querySelector('.ins-badge');
+        if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
+        if (genBtn) genBtn.remove();
+      }
+      for (var ci = 0; ci < insState.clients.length; ci++) {
+        if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
+      }
+      if (!insState.clients.filter(function(c) { return !c.hasConfig; }).length) $('ins-btn-gen-all').classList.add('hidden');
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+      insLog('Error: ' + (e.message || e), 'error');
+    });
+}
+
+function insRunGenAll() {
+  var missing = insState.clients.filter(function(c) { return !c.hasConfig; });
+  if (missing.length === 0) { insLog('Todos tienen config.', 'success'); return; }
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  insLog('Generando config para ' + missing.length + ' cliente(s)…', 'info');
+  $('ins-btn-gen-all').disabled = true;
+  function processNext(idx) {
+    if (idx >= missing.length) {
+      $('ins-btn-gen-all').disabled = false;
+      insLog('Proceso completado.', 'success');
+      return;
+    }
+    var client = missing[idx];
+    var rows   = document.querySelectorAll('.ins-client-row');
+    var targetRow = null;
+    for (var i = 0; i < rows.length; i++) { if (rows[i].dataset.folderId === client.folderId) { targetRow = rows[i]; break; } }
+    insState.busy = true;
+    var genBtn = targetRow ? targetRow.querySelector('.ins-gen-btn') : null;
+    if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
+    insLog('[' + (idx + 1) + '/' + missing.length + '] ' + client.name, 'info');
+    gasGet({ action: 'generateClientConfig', adminCode: state.adminCode, folderId: client.folderId })
+      .then(function(r) {
+        insState.busy = false;
+        if (!r.success) {
+          insLog('  Error: ' + r.error, 'error');
+          if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+        } else {
+          var logs = r.logs || [];
+          for (var li = 0; li < logs.length; li++) {
+            var t = logs[li].indexOf('ERROR') === 0 ? 'error' : logs[li].indexOf('OK') === 0 ? 'success' : 'info';
+            insLog('  ' + logs[li], t);
+          }
+          insLog('  ✓ ' + r.invoiceCount + ' factura(s)', 'success');
+          if (targetRow) {
+            var badge = targetRow.querySelector('.ins-badge');
+            if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
+            if (genBtn) genBtn.remove();
+          }
+          for (var ci = 0; ci < insState.clients.length; ci++) {
+            if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
+          }
+        }
+        processNext(idx + 1);
+      })
+      .catch(function(e) {
+        insState.busy = false;
+        insLog('  Error: ' + (e.message || e), 'error');
+        if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
+        processNext(idx + 1);
+      });
+  }
+  processNext(0);
+}
+
+// ── PDF Inspector tab ─────────────────────────────────────────────────────────
+
+function insLoadPDFs(folderId) {
+  $('ins-pdf-list').innerHTML = '<span style="color:var(--muted);font-size:11px;">Cargando…</span>';
+  gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: folderId })
+    .then(function(r) {
+      if (!r.success) { $('ins-pdf-list').innerHTML = '<span style="color:var(--error);font-size:11px;">Error: ' + escapeHtml(r.error) + '</span>'; return; }
+      var pdfs = (r.files || []).filter(function(f) { return f.mimeType === 'application/pdf'; });
+      insState.pdfFiles = pdfs;
+      renderInsPDFList(pdfs);
+    })
+    .catch(function(e) { $('ins-pdf-list').innerHTML = '<span style="color:var(--error);font-size:11px;">Error de conexión.</span>'; });
+}
+
+function renderInsPDFList(pdfs) {
+  var el = $('ins-pdf-list');
+  el.innerHTML = '';
+  if (pdfs.length === 0) { el.innerHTML = '<span style="color:var(--muted);font-size:11px;">Sin PDFs.</span>'; return; }
+  for (var i = 0; i < pdfs.length; i++) {
+    (function(pdf) {
+      var row = document.createElement('div');
+      row.className = 'ins-pdf-row';
+      row.innerHTML = '<span class="ins-pdf-name">' + escapeHtml(pdf.name) + '</span><button class="ins-pdf-btn">Ver texto</button>';
+      row.querySelector('.ins-pdf-btn').addEventListener('click', function() { insRunInspectPDF(pdf.id, pdf.name, this); });
+      el.appendChild(row);
+    })(pdfs[i]);
+  }
+}
+
+function insRunInspectPDF(fileId, filename, btnEl) {
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '…'; }
+  insLog('Inspeccionando: ' + filename, 'info');
+  gasGet({ action: 'inspectPDF', adminCode: state.adminCode, fileId: fileId })
+    .then(function(r) {
+      insState.busy = false;
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Ver texto'; }
+      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
+      insLog('=== ' + filename + ' ===', 'data');
+      var lines = (r.text || '').split('\n');
+      var limit = Math.min(lines.length, 200);
+      for (var i = 0; i < limit; i++) { if (lines[i].trim()) insLog(lines[i], 'data'); }
+      if (lines.length > 200) insLog('… (' + (lines.length - 200) + ' líneas omitidas)', 'warn');
+      insLog('=== fin ===', 'data');
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = 'Ver texto'; }
+      insLog('Error: ' + (e.message || e), 'error');
+    });
+}
+
+// ── Extractor tab ─────────────────────────────────────────────────────────────
+
+function insRunExtract() {
+  if (!insState.client) { insLog('Selecciona un cliente en la pestaña Config primero.', 'warn'); return; }
+  if (insState.busy)    { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  $('ins-btn-extract').disabled = true;
+  insLog('Extrayendo conceptos: ' + insState.client.name, 'info');
+  gasGet({ action: 'extractFolderItems', adminCode: state.adminCode, folderId: insState.client.folderId })
+    .then(function(r) {
+      insState.busy = false;
+      $('ins-btn-extract').disabled = false;
+      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
+      var logs = r.logs || [];
+      for (var i = 0; i < logs.length; i++) insLog('  ' + logs[i], logs[i].indexOf('ERROR') === 0 ? 'error' : 'info');
+      var items = r.items || [];
+      if (!items.length) { insLog('Sin conceptos.', 'warn'); return; }
+      insLog('─── ' + items.length + ' concepto(s) ───', 'data');
+      for (var j = 0; j < items.length; j++) {
+        var it   = items[j];
+        var sign = it.neto >= 0 ? '+' : '';
+        insLog('  [' + it.documento.substring(0,3).toUpperCase() + ' #' + it.folio + '] ' + it.concepto + '  ' + sign + it.neto.toLocaleString('es-CL'), 'data');
+      }
+      insLog('Total: ' + items.length + ' concepto(s)', 'success');
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      $('ins-btn-extract').disabled = false;
+      insLog('Error: ' + (e.message || e), 'error');
+    });
+}
+
+// ── Renombrador tab ───────────────────────────────────────────────────────────
+
+function insRunPlanRename() {
+  if (!insState.client) { insLog('Selecciona un cliente en la pestaña Config primero.', 'warn'); return; }
+  if (insState.busy)    { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  $('ins-btn-plan-rename').disabled = true;
+  $('ins-apply-rename-wrap').classList.add('hidden');
+  insLog('Planificando renombrado: ' + insState.client.name, 'info');
+  gasGet({ action: 'planRenaming', adminCode: state.adminCode, folderId: insState.client.folderId })
+    .then(function(r) {
+      insState.busy = false;
+      $('ins-btn-plan-rename').disabled = false;
+      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
+      insState.renamePlan = r.plan || [];
+      insLog('─── Plan (' + insState.renamePlan.length + ' archivo(s)) ───', 'data');
+      var counts   = {};
+      var icons    = { 'RENOMBRAR':'✓','ADVERTENCIA':'⚠','CONFLICTO':'⚡','AMBIGUO':'?','SIN GRUPO':'✗','OMITIDO':'○','YA RENOMBRADO':'—','ERROR':'!' };
+      var logTypes = { 'RENOMBRAR':'success','ADVERTENCIA':'warn','CONFLICTO':'warn','AMBIGUO':'error','SIN GRUPO':'error','OMITIDO':'info','YA RENOMBRADO':'info','ERROR':'error' };
+      for (var i = 0; i < insState.renamePlan.length; i++) {
+        var p = insState.renamePlan[i];
+        counts[p.status] = (counts[p.status] || 0) + 1;
+        var icon = icons[p.status] || '?';
+        var lt   = logTypes[p.status] || 'info';
+        var line = icon + ' [' + p.status + '] ' + p.filename;
+        if (p.newName) line += '\n    → ' + p.newName;
+        if (p.notes)   line += '\n    ' + p.notes;
+        insLog(line, lt);
+      }
+      var summary = Object.keys(counts).map(function(k) { return k + ': ' + counts[k]; }).join(' | ');
+      insLog('Resumen: ' + summary, 'info');
+      var canApply = insState.renamePlan.filter(function(p) { return p.status === 'RENOMBRAR' || p.status === 'ADVERTENCIA' || p.status === 'CONFLICTO'; });
+      if (canApply.length > 0) {
+        $('ins-apply-rename-wrap').classList.remove('hidden');
+        insLog(canApply.length + ' archivo(s) listos. Haz clic en "Aplicar renombrado".', 'warn');
+      } else {
+        insLog('Nada que aplicar.', 'info');
+      }
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      $('ins-btn-plan-rename').disabled = false;
+      insLog('Error: ' + (e.message || e), 'error');
+    });
+}
+
+function insRunApplyRename() {
+  var toApply = insState.renamePlan.filter(function(p) { return p.status === 'RENOMBRAR' || p.status === 'ADVERTENCIA' || p.status === 'CONFLICTO'; });
+  if (!toApply.length) { insLog('Nada que aplicar.', 'warn'); return; }
+  if (insState.busy)   { insLog('Operación en curso, espera…', 'warn'); return; }
+  $('ins-btn-apply-rename').disabled = true;
+  insLog('Aplicando ' + toApply.length + ' renombrado(s)…', 'info');
+  function applyNext(idx) {
+    if (idx >= toApply.length) {
+      $('ins-btn-apply-rename').disabled = false;
+      insLog('✓ Renombrado completado.', 'success');
+      return;
+    }
+    var p = toApply[idx];
+    insState.busy = true;
+    gasGet({ action: 'applyRenaming', adminCode: state.adminCode, fileId: p.fileId, newName: p.newName })
+      .then(function(r) {
+        insState.busy = false;
+        if (!r.success) insLog('  ERROR ' + p.filename + ': ' + r.error, 'error');
+        else            insLog('  ✓ ' + p.filename + '\n    → ' + r.newName, 'success');
+        applyNext(idx + 1);
+      })
+      .catch(function(e) {
+        insState.busy = false;
+        insLog('  Error: ' + (e.message || e), 'error');
+        applyNext(idx + 1);
+      });
+  }
+  applyNext(0);
+}
+
+// ── Inspector wire-up ─────────────────────────────────────────────────────────
+
+$('btn-inspector').addEventListener('click', showInspector);
+$('ins-btn-verify').addEventListener('click', insRunInspectPeriod);
+$('ins-btn-gen-all').addEventListener('click', insRunGenAll);
+$('ins-btn-extract').addEventListener('click', insRunExtract);
+$('ins-btn-plan-rename').addEventListener('click', insRunPlanRename);
+$('ins-btn-apply-rename').addEventListener('click', insRunApplyRename);
+$('ins-btn-clear').addEventListener('click', insClearConsole);
+
+// Tab switching
+(function() {
+  var tabs = document.querySelectorAll('.ins-tab');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var tabName = tab.dataset.tab;
+      document.querySelectorAll('.ins-tab-panel').forEach(function(p) { p.classList.add('hidden'); });
+      $('ins-panel-' + tabName).classList.remove('hidden');
+    });
+  });
+}());
 
 </script>
 </body>
