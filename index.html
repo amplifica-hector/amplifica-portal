@@ -1375,13 +1375,15 @@
       flex-direction: column;
       padding: 16px 14px;
       gap: 10px;
-      overflow-y: auto;
+      overflow: hidden;
       border-right: 1px solid var(--border);
       background: var(--white);
     }
-    .ins-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
-    .ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); margin-top: 4px; }
-    .ins-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .ins-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
+    .ins-title-row  { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .ins-title-icon { height: 28px; width: auto; flex-shrink: 0; }
+    .ins-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; }
     .ins-tab {
       flex: 1; padding: 5px 2px; font-size: 11px; font-family: inherit; font-weight: 500;
       cursor: pointer; border: none; background: transparent; color: var(--muted);
@@ -1389,7 +1391,7 @@
     }
     .ins-tab.active { background: var(--blue); color: #fff; }
     .ins-tab:not(.active):hover { background: var(--bg); color: var(--text); }
-    .ins-tab-panel { display: flex; flex-direction: column; gap: 8px; }
+    .ins-tab-panel { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow-y: auto; }
     .ins-tab-panel.hidden { display: none; }
     .ins-field-group { display: flex; flex-direction: column; gap: 3px; }
     .ins-label { font-size: 12px; font-weight: 500; color: var(--text); }
@@ -1952,11 +1954,13 @@
         <div class="ins-controls">
           <div class="ins-controls-header">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
-            <picture style="display:block; margin: 6px 0 2px;">
-              <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
-              <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" style="width:100%; max-width:160px; display:block;">
-            </picture>
-            <div class="ins-title">Inspector de Facturas</div>
+            <div class="ins-title-row">
+              <div class="ins-title">Inspector de Facturas</div>
+              <picture>
+                <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
+                <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" class="ins-title-icon">
+              </picture>
+            </div>
           </div>
 
           <!-- Tool tabs -->
