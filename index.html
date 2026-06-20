@@ -1988,6 +1988,15 @@
               <div class="gap-sm"></div>
               <button class="btn btn-yellow btn-block" id="ins-btn-apply-rename">Aplicar renombrado</button>
             </div>
+            <div id="ins-rename-global-wrap" class="hidden">
+              <div class="gap-sm"></div>
+              <div class="ins-hint" style="color:var(--muted);font-size:11px;">Período completo</div>
+              <button class="btn btn-primary btn-block" id="ins-btn-plan-rename-all">Planificar período completo</button>
+              <div id="ins-apply-rename-all-wrap" class="hidden">
+                <div class="gap-sm"></div>
+                <button class="btn btn-yellow btn-block" id="ins-btn-apply-rename-all">Aplicar renombrado (período)</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3689,6 +3698,8 @@ function showInspector() {
   $('ins-client-status').classList.add('hidden');
   $('ins-btn-gen-all').classList.add('hidden');
   $('ins-apply-rename-wrap').classList.add('hidden');
+  $('ins-rename-global-wrap').classList.add('hidden');
+  $('ins-apply-rename-all-wrap').classList.add('hidden');
   $('ins-search-client').value = '';
   $('ins-search-client').classList.add('hidden');
   $('ins-pdf-list').innerHTML = '';
@@ -3781,6 +3792,8 @@ function insRunInspectPeriod() {
   $('ins-btn-verify').disabled = true;
   $('ins-client-status').classList.add('hidden');
   $('ins-btn-gen-all').classList.add('hidden');
+  $('ins-rename-global-wrap').classList.add('hidden');
+  $('ins-apply-rename-all-wrap').classList.add('hidden');
   insClearConsole();
   insLog('Verificando ' + month + ' ' + year + '…', 'info');
   gasGet({ action: 'inspectPeriod', adminCode: state.adminCode, year: year, month: month }, 30000)
@@ -3814,6 +3827,8 @@ function insRunInspectPeriod() {
         $('ins-btn-verify').disabled = false;
         var missing = insState.clients.filter(function(c) { return !c.hasConfig; }).length;
         insLog('Listo. ' + missing + ' sin config.', missing > 0 ? 'warn' : 'success');
+        if (insState.clients.length > 0) $('ins-rename-global-wrap').classList.remove('hidden');
+        insState.renamePlan = [];
       });
     })
     .catch(function(e) {
@@ -4094,6 +4109,128 @@ function insRunGenAll() {
   for (var i = 0; i < Math.min(CONCURRENCY, total); i++) startNext();
 }
 
+function insRunPlanRenameAll() {
+  if (!insState.clients || !insState.clients.length) {
+    insLog('Verifica un período primero.', 'warn'); return;
+  }
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  var CONCURRENCY = 3;
+  var clients = insState.clients.slice();
+  var total = clients.length, idx = 0, completed = 0;
+  var combinedPlan = [];
+  insState.busy = true;
+  $('ins-btn-plan-rename-all').disabled = true;
+  $('ins-apply-rename-all-wrap').classList.add('hidden');
+  insLog('Planificando renombrado para ' + total + ' cliente(s)…', 'info');
+
+  function planClient(client) {
+    return gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: client.folderId }, 30000)
+      .then(function(r) {
+        if (!r.success) throw new Error(r.error);
+        var pdfs = (r.files || []).filter(function(f) { return f.mimeType === 'application/pdf'; });
+        pdfs.sort(function(a, b) { return a.name < b.name ? -1 : 1; });
+        if (!pdfs.length) { insLog('  ' + client.name + ' — sin PDFs', 'info'); return; }
+        var alreadyDone = [], toProcess = [];
+        pdfs.forEach(function(pdf) {
+          if (pdf.name.indexOf(' - ') !== -1) {
+            alreadyDone.push({ fileId: pdf.id, filename: pdf.name, newName: null, status: 'YA RENOMBRADO', notes: '', grupo: '', clientName: client.name });
+          } else {
+            toProcess.push(pdf);
+          }
+        });
+        var promises = toProcess.map(function(pdf) {
+          return gasGet({ action: 'planSinglePDF', adminCode: state.adminCode, fileId: pdf.id, filename: pdf.name }, 60000)
+            .then(function(res) {
+              if (!res.success || !res.entry) return { fileId: pdf.id, filename: pdf.name, newName: null, status: 'ERROR', notes: res.error || '', grupo: '', clientName: client.name };
+              res.entry.clientName = client.name;
+              return res.entry;
+            })
+            .catch(function(e) { return { fileId: pdf.id, filename: pdf.name, newName: null, status: 'ERROR', notes: e.message || '', grupo: '', clientName: client.name }; });
+        });
+        return Promise.all(promises).then(function(entries) {
+          var plan = alreadyDone.concat(entries.filter(Boolean));
+          var counts = {};
+          plan.forEach(function(p) { counts[p.status] = (counts[p.status] || 0) + 1; });
+          var summary = Object.keys(counts).map(function(s) { return s + ':' + counts[s]; }).join(' ');
+          var applyable = plan.filter(function(p) { return p.status === 'RENOMBRAR' || p.status === 'ADVERTENCIA' || p.status === 'CONFLICTO'; });
+          combinedPlan = combinedPlan.concat(plan);
+          insLog('  ' + client.name + ' — ' + plan.length + ' archivo(s) [' + summary + ']', applyable.length > 0 ? 'success' : 'info');
+        });
+      })
+      .catch(function(e) { insLog('  ' + client.name + ': error — ' + (e.message || e), 'error'); });
+  }
+
+  function startNext() {
+    if (idx >= total) return;
+    var client = clients[idx++];
+    planClient(client).finally(function() {
+      completed++;
+      if (completed === total) {
+        insState.renamePlan = combinedPlan;
+        insState.busy = false;
+        $('ins-btn-plan-rename-all').disabled = false;
+        var applyable = combinedPlan.filter(function(p) {
+          return p.status === 'RENOMBRAR' || p.status === 'ADVERTENCIA' || p.status === 'CONFLICTO';
+        });
+        insLog('─── Plan completo: ' + combinedPlan.length + ' archivo(s), ' + applyable.length + ' a renombrar ───', 'data');
+        if (applyable.length > 0) {
+          $('ins-apply-rename-all-wrap').classList.remove('hidden');
+          insLog('⚠ Revisa el plan antes de aplicar. CONFLICTO y ADVERTENCIA se incluirán.', 'warn');
+        } else {
+          insLog('Sin archivos a renombrar en este período.', 'info');
+        }
+      } else {
+        startNext();
+      }
+    });
+  }
+
+  for (var i = 0; i < Math.min(CONCURRENCY, total); i++) startNext();
+}
+
+function insRunApplyRenameAll() {
+  var toApply = (insState.renamePlan || []).filter(function(p) {
+    return p.status === 'RENOMBRAR' || p.status === 'ADVERTENCIA' || p.status === 'CONFLICTO';
+  });
+  if (!toApply.length) { insLog('Sin archivos a renombrar.', 'warn'); return; }
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  var CONCURRENCY = 5;
+  var total = toApply.length, idx = 0, completed = 0, errors = 0;
+  insState.busy = true;
+  $('ins-btn-apply-rename-all').disabled = true;
+  insLog('Aplicando renombrado a ' + total + ' archivo(s)…', 'info');
+
+  function applyOne(p) {
+    return gasGet({ action: 'applyRenaming', adminCode: state.adminCode, fileId: p.fileId, newName: p.newName }, 30000)
+      .then(function(r) {
+        var prefix = p.clientName ? '[' + p.clientName + '] ' : '';
+        if (r.success) insLog('  ✓ ' + prefix + p.newName, 'success');
+        else { insLog('  ✗ ' + prefix + p.filename + ': ' + r.error, 'error'); errors++; }
+      })
+      .catch(function(e) {
+        insLog('  ✗ ' + p.filename + ': ' + (e.message || e), 'error'); errors++;
+      });
+  }
+
+  function startNext() {
+    if (idx >= total) return;
+    var p = toApply[idx++];
+    applyOne(p).finally(function() {
+      completed++;
+      if (completed === total) {
+        insState.busy = false;
+        $('ins-btn-apply-rename-all').disabled = false;
+        insLog('✓ Renombrado completado: ' + (total - errors) + '/' + total + ' exitosos.', errors > 0 ? 'warn' : 'success');
+        $('ins-apply-rename-all-wrap').classList.add('hidden');
+      } else {
+        startNext();
+      }
+    });
+  }
+
+  for (var i = 0; i < Math.min(CONCURRENCY, total); i++) startNext();
+}
+
 // ── PDF Inspector tab ─────────────────────────────────────────────────────────
 
 function insLoadPDFs(folderId) {
@@ -4273,6 +4410,8 @@ $('ins-btn-gen-all').addEventListener('click', insRunGenAll);
 $('ins-btn-extract').addEventListener('click', insRunExtract);
 $('ins-btn-plan-rename').addEventListener('click', insRunPlanRename);
 $('ins-btn-apply-rename').addEventListener('click', insRunApplyRename);
+$('ins-btn-plan-rename-all').addEventListener('click', insRunPlanRenameAll);
+$('ins-btn-apply-rename-all').addEventListener('click', insRunApplyRenameAll);
 $('ins-btn-clear').addEventListener('click', insClearConsole);
 
 // Tab switching
