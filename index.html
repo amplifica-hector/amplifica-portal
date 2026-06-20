@@ -4040,7 +4040,7 @@ function insRunGenAll() {
   var missing = insState.clients.filter(function(c) { return !c.hasConfig; });
   if (missing.length === 0) { insLog('Todos tienen config.', 'success'); return; }
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
-  var CONCURRENCY = 3;
+  var CONCURRENCY = 6;
   var total = missing.length, idx = 0, completed = 0;
   insState.busy = true;
   $('ins-btn-gen-all').disabled = true;
@@ -4114,7 +4114,7 @@ function insRunPlanRenameAll() {
     insLog('Verifica un período primero.', 'warn'); return;
   }
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
-  var CONCURRENCY = 3;
+  var CONCURRENCY = 6;
   var clients = insState.clients.slice();
   var total = clients.length, idx = 0, completed = 0;
   var combinedPlan = [];
@@ -4194,7 +4194,7 @@ function insRunApplyRenameAll() {
   });
   if (!toApply.length) { insLog('Sin archivos a renombrar.', 'warn'); return; }
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
-  var CONCURRENCY = 5;
+  var CONCURRENCY = 10;
   var total = toApply.length, idx = 0, completed = 0, errors = 0;
   insState.busy = true;
   $('ins-btn-apply-rename-all').disabled = true;
