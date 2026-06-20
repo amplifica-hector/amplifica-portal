@@ -3002,7 +3002,7 @@ $('btn-export-links').addEventListener('click', function() {
     msgEl.classList.remove('hidden'); return;
   }
   filtered.sort(function(a, b) { return a.client < b.client ? -1 : 1; });
-  var baseUrl = window.location.href.split('?')[0];
+  var baseUrl = 'https://amplifica-hector.github.io/amplifica-portal/';
   var rows = filtered.map(function(t) {
     return { name: t.client, url: baseUrl + '?token=' + t.token };
   });
