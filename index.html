@@ -1509,6 +1509,9 @@
 
       .admin-prompt-icon { color: #4548FF; }
       .admin-ribbon      { color: #000; }
+
+      .ins-client-row.ins-selected { background: rgba(69, 72, 255, 0.18); }
+      .ins-client-row:hover:not(.ins-selected) { background: rgba(255, 255, 255, 0.05); }
     }
   </style>
 </head>
@@ -1945,6 +1948,11 @@
             <button class="btn btn-primary btn-block" id="ins-btn-verify">Verificar período</button>
             <div id="ins-client-status" class="ins-client-status hidden"></div>
             <button id="ins-btn-gen-all" class="btn btn-outline btn-block hidden">Generar todos los faltantes</button>
+            <div id="ins-selected-actions" class="hidden" style="display:none;flex-direction:column;gap:4px;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;">
+              <div id="ins-selected-label" style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+              <button class="btn btn-outline btn-block" id="ins-btn-view-config">Ver config actual</button>
+              <button class="btn btn-outline btn-block" id="ins-btn-regen">Regenerar config</button>
+            </div>
           </div>
 
           <!-- Tab: PDF Inspector -->
@@ -3671,6 +3679,7 @@ function showInspector() {
   $('ins-client-status').classList.add('hidden');
   $('ins-btn-gen-all').classList.add('hidden');
   $('ins-apply-rename-wrap').classList.add('hidden');
+  $('ins-selected-actions').style.display = 'none';
   $('ins-pdf-list').innerHTML = '';
   $('ins-client-label-pdf').textContent    = '— ninguno —';
   $('ins-client-label-items').textContent  = '— ninguno —';
@@ -3717,6 +3726,47 @@ function insSetClient(client) {
   $('ins-client-label-items').textContent  = client.name;
   $('ins-client-label-rename').textContent = client.name;
   insLoadPDFs(client.folderId);
+  // Selected-client actions panel
+  var actEl = $('ins-selected-actions');
+  actEl.style.display = 'flex';
+  $('ins-selected-label').textContent = client.name;
+  var viewBtn = $('ins-btn-view-config');
+  if (client.hasConfig) viewBtn.style.display = '';
+  else                  viewBtn.style.display = 'none';
+}
+
+function insRunLoadConfig() {
+  if (!insState.client) { insLog('Selecciona un cliente primero.', 'warn'); return; }
+  if (insState.busy)    { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  var btn = $('ins-btn-view-config');
+  btn.disabled = true;
+  insLog('Cargando config: ' + insState.client.name, 'info');
+  gasGet({ action: 'loadClientConfig', adminCode: state.adminCode, folderId: insState.client.folderId })
+    .then(function(r) {
+      insState.busy = false;
+      btn.disabled = false;
+      if (!r.success) { insLog('Error: ' + r.error, 'error'); return; }
+      if (!r.invoices) { insLog('Sin config para este cliente.', 'warn'); return; }
+      insLog('─── invoices.json (' + r.invoices.length + ' doc(s)) ───', 'data');
+      for (var i = 0; i < r.invoices.length; i++) {
+        var inv = r.invoices[i];
+        var tipo3 = (inv.tipo || '').substring(0, 3).toUpperCase();
+        var venc = inv.fechaVencimiento ? '  Venc: ' + inv.fechaVencimiento : '';
+        insLog('[' + tipo3 + ' #' + (inv.folio || '?') + ']  Emisión: ' + (inv.fechaEmision || '—') + venc + '  Neto: $' + (inv.neto || 0) + '  Total: $' + (inv.total || 0), 'data');
+        if (inv.items && inv.items.length) {
+          for (var j = 0; j < inv.items.length; j++) {
+            insLog('  · ' + inv.items[j].nombre + ': $' + inv.items[j].neto, 'data');
+          }
+        }
+      }
+      insLog('─── fin config ───', 'data');
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      btn.disabled = false;
+      insLog('Error: ' + (e.message || e), 'error');
+    });
 }
 
 function insRunInspectPeriod() {
@@ -4048,6 +4098,8 @@ function insRunApplyRename() {
 $('btn-inspector').addEventListener('click', showInspector);
 $('ins-btn-verify').addEventListener('click', insRunInspectPeriod);
 $('ins-btn-gen-all').addEventListener('click', insRunGenAll);
+$('ins-btn-view-config').addEventListener('click', insRunLoadConfig);
+$('ins-btn-regen').addEventListener('click', function() { if (insState.client) insRunGenerate(insState.client, null); });
 $('ins-btn-extract').addEventListener('click', insRunExtract);
 $('ins-btn-plan-rename').addEventListener('click', insRunPlanRename);
 $('ins-btn-apply-rename').addEventListener('click', insRunApplyRename);
