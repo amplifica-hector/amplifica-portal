@@ -4118,7 +4118,7 @@ function renderDashboard(data) {
   }
   dashState = { tab: hasOverdue ? 'overdue' : 'all', search: '', sortCol: null, sortDir: 'asc' };
 
-  var bank = (dashMeta && dashMeta.datosBancarios) || {};
+  var bank = data.bankingData || (dashMeta && dashMeta.datosBancarios) || null;
   var derivedVencStr = '';
   for (var dv = 0; dv < dashInvoices.length; dv++) {
     var dvInv = dashInvoices[dv];
@@ -4183,7 +4183,7 @@ function renderDashboard(data) {
 
   // Banking footer
   var bankFooter = '';
-  if (dashMeta && dashMeta.datosBancarios) {
+  if (bank) {
     var bankFields = [
       ['Razón Social', bank.razonSocial],
       ['RUT',          bank.rut],
@@ -4396,7 +4396,7 @@ $('btn-explore').addEventListener('click', function() {
     var cfg = results[1];
     if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los documentos.'); return; }
     var configData = (cfg && cfg.success && cfg.invoices) ? { invoices: cfg.invoices, meta: cfg.meta, help: cfg.help || null } : null;
-    showDocumentView({ client: client, year: year, month: month, files: r.files, configData: configData });
+    showDocumentView({ client: client, year: year, month: month, files: r.files, configData: configData, bankingData: (cfg && cfg.success) ? (cfg.bankingData || null) : null });
   }).catch(function() {
     btn.disabled = false; btn.textContent = 'Ver documentos';
     showInlineError('explorer-error', 'Error de conexión.');
