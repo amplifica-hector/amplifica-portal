@@ -1832,36 +1832,155 @@
     .fb-thanks-icon { font-size: 36px; margin-bottom: 8px; line-height: 1; }
     .fb-thanks-text { font-size: 14px; font-weight: 500; color: var(--text); }
 
-    /* ── Feedback Admin View ──────────────────────────────────────────────── */
-    .fb-toggle-row {
+    /* ── Feedback Admin View — Inspector-style ───────────────────────────── */
+    .fb-wrap {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0 14px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
     }
-    .fb-toggle-label { font-size: 14px; font-weight: 500; color: var(--text); }
-    .btn-sm { height: 32px; padding: 0 14px; font-size: 13px; }
-    .fb-stats-row {
+    .fb-controls {
+      width: 272px;
+      min-width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 14px;
+      gap: 10px;
+      overflow: hidden;
+      border-right: 1px solid var(--border);
+      background: var(--white);
+    }
+    .fb-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .fb-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
+    .fb-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 2px 0 4px; flex-shrink: 0; }
+    .fb-toggle-label { font-size: 12px; font-weight: 500; color: var(--text); }
+    .fb-toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .fb-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .fb-toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: var(--border);
+      border-radius: 11px;
+      transition: background 0.2s;
+    }
+    .fb-toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .fb-toggle-switch input:checked + .fb-toggle-slider { background: var(--blue); }
+    .fb-toggle-switch input:checked + .fb-toggle-slider:before { transform: translateX(18px); }
+    .fb-toggle-switch input:disabled + .fb-toggle-slider { opacity: 0.5; cursor: not-allowed; }
+    .fb-period-row { display: flex; gap: 8px; flex-shrink: 0; }
+    .fb-period-select {
+      width: 100%;
+      height: 30px;
+      padding: 0 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.13s;
+    }
+    .fb-period-select:focus { border-color: var(--blue); }
+    .fb-stats-btn { flex-shrink: 0; font-size: 12px; height: 30px; }
+    .fb-entry-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+    }
+    .fb-entry-row {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      padding: 12px 14px;
+      gap: 7px;
+      padding: 6px 7px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.1s;
+      flex-shrink: 0;
+    }
+    .fb-entry-row:hover { background: var(--bg); }
+    .fb-entry-row.fb-selected { background: #eef2ff; }
+    .fb-entry-row-emoji { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .fb-entry-row-name { flex: 1; font-size: 12px; color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fb-entry-row-period { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+    /* Right detail panel */
+    .fb-detail-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      background: var(--white);
+      padding: 24px;
+    }
+    .fb-detail-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.6;
+      min-height: 120px;
+    }
+    .fb-detail-entry { display: flex; flex-direction: column; gap: 16px; }
+    .fb-rating-hero { text-align: center; padding: 8px 0 4px; }
+    .fb-rating-hero-emoji { font-size: 52px; line-height: 1; display: block; }
+    .fb-rating-hero-num { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); margin-top: 4px; display: block; }
+    .fb-detail-meta { font-size: 13px; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 12px; }
+    .fb-detail-meta strong { color: var(--text); font-weight: 600; }
+    .fb-detail-comment {
+      border-left: 3px solid var(--blue);
+      padding: 10px 14px;
       background: var(--bg);
-      border-radius: var(--radius-md);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      font-style: italic;
     }
-    .fb-avg { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); }
-    .fb-count { font-size: 13px; color: var(--muted); }
-    .fb-entries-list { display: flex; flex-direction: column; gap: 8px; }
-    .fb-entry { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--white); }
-    .fb-entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .fb-entry-client { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
-    .fb-entry-period { font-size: 12px; color: var(--muted); }
-    .fb-entry-rating { font-size: 18px; flex-shrink: 0; }
-    .fb-entry-comment { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
-    .fb-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 20px 0; }
+    /* Stats panel */
+    .fb-detail-stats { display: flex; flex-direction: column; gap: 20px; }
+    .fb-stats-hero { text-align: center; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+    .fb-stats-avg-emoji { font-size: 40px; line-height: 1; display: block; }
+    .fb-stats-avg-num { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; color: var(--text); }
+    .fb-stats-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .fb-stats-section-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .fb-dist-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .fb-dist-emoji { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+    .fb-dist-bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .fb-dist-bar { height: 100%; background: var(--blue); border-radius: 4px; transition: width 0.3s; }
+    .fb-dist-count { font-size: 11px; color: var(--muted); width: 20px; text-align: right; flex-shrink: 0; }
+    .fb-scorer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+    .fb-scorer-item { font-size: 12px; color: var(--text); padding: 4px 8px; background: var(--bg); border-radius: 4px; }
+    .fb-stats-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 24px 0; }
+    @media (max-width: 767px) {
+      .fb-wrap { flex-direction: column; }
+      .fb-controls { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); max-height: 48vh; }
+      .fb-detail-wrap { padding: 16px; }
+    }
 
     @media (prefers-color-scheme: dark) {
       .feedback-fab { background: var(--blue); }
@@ -2401,33 +2520,63 @@
 
     <!-- ── View: Feedback de clientes ────────────────────────────────── -->
     <div id="view-feedback" class="hidden">
-      <div class="card card-admin">
-        <div class="card-header">
-          <div class="card-back">
+      <div class="fb-wrap">
+
+        <!-- LEFT CONTROLS -->
+        <div class="fb-controls">
+          <div class="fb-controls-header">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+            <div class="tool-title-row">
+              <div class="fb-title">Feedback de clientes</div>
+            </div>
           </div>
-          <div class="card-title">💬 Feedback de clientes</div>
-          <div class="card-subtitle">Opiniones recibidas desde el portal</div>
+
+          <!-- Toggle -->
+          <div class="fb-toggle-row">
+            <span class="fb-toggle-label">Feedback en portal</span>
+            <label class="fb-toggle-switch">
+              <input type="checkbox" id="fb-toggle-input">
+              <span class="fb-toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Period filter -->
+          <div class="fb-period-row">
+            <div class="ins-field-group" style="flex:1;">
+              <label class="ins-label">Año</label>
+              <select id="fb-year" class="fb-period-select"></select>
+            </div>
+            <div class="ins-field-group" style="flex:1;" id="fb-month-group">
+              <label class="ins-label">Mes</label>
+              <select id="fb-month" class="fb-period-select"></select>
+            </div>
+          </div>
+
+          <!-- Stats button -->
+          <button class="btn btn-outline btn-block fb-stats-btn" id="fb-btn-stats">📊 Ver estadísticas</button>
+
+          <!-- Loading spinner -->
+          <div id="fb-list-loading" class="ins-hint" style="text-align:center; padding:12px 0;">
+            <div class="spinner-dots"><span></span><span></span><span></span></div>
+          </div>
+
+          <!-- Empty state -->
+          <div id="fb-list-empty" class="ins-hint hidden" style="text-align:center; padding:10px 0;">Sin opiniones para este período.</div>
+
+          <!-- Entry rows -->
+          <div id="fb-entry-list" class="fb-entry-list hidden"></div>
         </div>
-        <div class="card-body">
-          <div id="fb-loading">
-            <div class="spinner-row">
-              <div class="spinner-dots"><span></span><span></span><span></span></div>
-              Cargando feedback…
-            </div>
+
+        <!-- RIGHT DETAIL PANEL -->
+        <div class="fb-detail-wrap">
+          <div id="fb-detail-empty" class="fb-detail-empty">
+            <div style="font-size:32px; margin-bottom:10px;">💬</div>
+            <div>Selecciona una opinión<br>o consulta las estadísticas</div>
           </div>
-          <div id="fb-content" class="hidden">
-            <div class="fb-toggle-row">
-              <span class="fb-toggle-label">Feedback en portal</span>
-              <button class="btn btn-sm" id="fb-toggle-btn"></button>
-            </div>
-            <div id="fb-stats-row" class="fb-stats-row hidden">
-              <div class="fb-avg" id="fb-avg-display"></div>
-              <div class="fb-count" id="fb-count-display"></div>
-            </div>
-            <div id="fb-entries" class="fb-entries-list"></div>
-          </div>
+          <div id="fb-detail-entry" class="fb-detail-entry hidden"></div>
+          <div id="fb-detail-stats" class="fb-detail-stats hidden"></div>
         </div>
+
       </div>
     </div>
 
@@ -5183,7 +5332,15 @@ function resetFeedbackForm() {
 
 // ── Feedback Admin View ─────────────────────────────────────────────────────────
 
-var fbAdminState = { enabled: false };
+var SPANISH_MONTH_ORDER = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+var fbAdminState = {
+  enabled: false,
+  allEntries: [],
+  filtered: [],
+  selectedIdx: -1,
+  showingStats: false
+};
 
 function showFeedbackView() {
   showView('view-feedback');
@@ -5191,72 +5348,254 @@ function showFeedbackView() {
 }
 
 function loadFeedbackView() {
-  $('fb-loading').classList.remove('hidden');
-  $('fb-content').classList.add('hidden');
+  $('fb-list-loading').classList.remove('hidden');
+  $('fb-list-empty').classList.add('hidden');
+  $('fb-entry-list').classList.add('hidden');
+  $('fb-detail-empty').classList.remove('hidden');
+  $('fb-detail-entry').classList.add('hidden');
+  $('fb-detail-stats').classList.add('hidden');
+  fbAdminState.selectedIdx = -1;
+  fbAdminState.showingStats = false;
+
   gasGet({ action: 'getFeedback', adminCode: state.adminCode })
     .then(function(res) {
-      $('fb-loading').classList.add('hidden');
+      $('fb-list-loading').classList.add('hidden');
       if (!res || !res.success) return;
-      renderFeedbackAdmin(res);
+      fbAdminState.enabled = res.feedbackEnabled;
+      $('fb-toggle-input').checked = res.feedbackEnabled;
+      fbAdminState.allEntries = res.entries || [];
+      fbPopulateYearSelect();
+      fbApplyFilter();
+      fbRenderList();
     })
     .catch(function() {
-      $('fb-loading').classList.add('hidden');
+      $('fb-list-loading').classList.add('hidden');
     });
 }
 
-function renderFeedbackAdmin(data) {
-  fbAdminState.enabled = data.feedbackEnabled;
-
-  var toggleBtn = $('fb-toggle-btn');
-  if (data.feedbackEnabled) {
-    toggleBtn.textContent = 'Activo ✓';
-    toggleBtn.className = 'btn btn-primary btn-sm';
-  } else {
-    toggleBtn.textContent = 'Inactivo';
-    toggleBtn.className = 'btn btn-outline btn-sm';
+function fbPopulateYearSelect() {
+  var years = [];
+  for (var i = 0; i < fbAdminState.allEntries.length; i++) {
+    var y = fbAdminState.allEntries[i].year;
+    if (y && years.indexOf(y) === -1) years.push(y);
   }
-
-  var statsRow = $('fb-stats-row');
-  if (data.totalCount > 0) {
-    var avgEmoji = FB_EMOJIS[Math.round(data.avgRating)] || '';
-    $('fb-avg-display').textContent = avgEmoji + ' ' + data.avgRating;
-    $('fb-count-display').textContent = data.totalCount + (data.totalCount === 1 ? ' respuesta' : ' respuestas');
-    statsRow.classList.remove('hidden');
-  } else {
-    statsRow.classList.add('hidden');
+  years.sort(function(a, b) { return b - a; });
+  var sel = $('fb-year');
+  sel.innerHTML = '<option value="">Todos los períodos</option>';
+  for (var j = 0; j < years.length; j++) {
+    sel.innerHTML += '<option value="' + escapeHtml(years[j]) + '">' + escapeHtml(years[j]) + '</option>';
   }
-
-  var list = $('fb-entries');
-  list.innerHTML = '';
-  if (!data.entries || data.entries.length === 0) {
-    list.innerHTML = '<div class="fb-empty">Aún no hay opiniones recibidas.</div>';
-  } else {
-    for (var i = 0; i < data.entries.length; i++) {
-      var e = data.entries[i];
-      var date = '';
-      try { date = e.submittedAt ? e.submittedAt.substring(0, 10) : ''; } catch(ex) {}
-      var commentHtml = e.comment ? '<div class="fb-entry-comment">' + escapeHtml(e.comment) + '</div>' : '';
-      var html = '<div class="fb-entry">' +
-        '<div class="fb-entry-header">' +
-          '<span class="fb-entry-client">' + escapeHtml(e.client || '') + '</span>' +
-          '<span class="fb-entry-period">' + escapeHtml((e.month || '') + ' ' + (e.year || '')) + '</span>' +
-          '<span class="fb-entry-rating">' + (FB_EMOJIS[e.rating] || e.rating) + '</span>' +
-        '</div>' +
-        commentHtml +
-      '</div>';
-      list.innerHTML += html;
-    }
-  }
-
-  $('fb-content').classList.remove('hidden');
+  $('fb-month-group').classList.add('hidden');
 }
 
-$('fb-toggle-btn').addEventListener('click', function() {
-  var newVal = !fbAdminState.enabled;
+function fbPopulateMonthSelect(year) {
+  var months = [];
+  for (var i = 0; i < fbAdminState.allEntries.length; i++) {
+    var e = fbAdminState.allEntries[i];
+    if (e.year === year && e.month && months.indexOf(e.month) === -1) months.push(e.month);
+  }
+  months.sort(function(a, b) {
+    return SPANISH_MONTH_ORDER.indexOf(a) - SPANISH_MONTH_ORDER.indexOf(b);
+  });
+  var sel = $('fb-month');
+  sel.innerHTML = '<option value="">Todos los meses</option>';
+  for (var j = 0; j < months.length; j++) {
+    sel.innerHTML += '<option value="' + escapeHtml(months[j]) + '">' + escapeHtml(months[j]) + '</option>';
+  }
+  $('fb-month-group').classList.remove('hidden');
+}
+
+function fbOnYearChange() {
+  var year = $('fb-year').value;
+  if (!year) {
+    $('fb-month-group').classList.add('hidden');
+  } else {
+    fbPopulateMonthSelect(year);
+  }
+  fbAdminState.selectedIdx = -1;
+  fbAdminState.showingStats = false;
+  fbApplyFilter();
+  fbRenderList();
+  fbShowDetailEmpty();
+}
+
+function fbApplyFilter() {
+  var year = $('fb-year').value;
+  var month = $('fb-month').value;
+  fbAdminState.filtered = fbAdminState.allEntries.filter(function(e) {
+    if (year && e.year !== year) return false;
+    if (month && e.month !== month) return false;
+    return true;
+  });
+}
+
+function fbRenderList() {
+  var list = $('fb-entry-list');
+  var empty = $('fb-list-empty');
+  if (fbAdminState.filtered.length === 0) {
+    list.classList.add('hidden');
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  list.innerHTML = '';
+  for (var i = 0; i < fbAdminState.filtered.length; i++) {
+    var e = fbAdminState.filtered[i];
+    var emoji = FB_EMOJIS[e.rating] || '';
+    var period = (e.month || '') + ' ' + (e.year || '');
+    var sel = (i === fbAdminState.selectedIdx) ? ' fb-selected' : '';
+    list.innerHTML +=
+      '<div class="fb-entry-row' + sel + '" data-idx="' + i + '">' +
+        '<span class="fb-entry-row-emoji">' + emoji + '</span>' +
+        '<span class="fb-entry-row-name">' + escapeHtml(e.client || '') + '</span>' +
+        '<span class="fb-entry-row-period">' + escapeHtml(period) + '</span>' +
+      '</div>';
+  }
+  list.classList.remove('hidden');
+}
+
+function fbShowDetailEmpty() {
+  $('fb-detail-empty').classList.remove('hidden');
+  $('fb-detail-entry').classList.add('hidden');
+  $('fb-detail-stats').classList.add('hidden');
+}
+
+function fbSelectEntry(idx) {
+  fbAdminState.selectedIdx = idx;
+  fbAdminState.showingStats = false;
+  var rows = $('fb-entry-list').querySelectorAll('.fb-entry-row');
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].classList.toggle('fb-selected', parseInt(rows[i].dataset.idx, 10) === idx);
+  }
+  $('fb-detail-empty').classList.add('hidden');
+  $('fb-detail-stats').classList.add('hidden');
+  $('fb-detail-entry').classList.remove('hidden');
+  fbRenderDetail(fbAdminState.filtered[idx]);
+}
+
+function fbRenderDetail(entry) {
+  var emoji = FB_EMOJIS[entry.rating] || '';
+  var date = '';
+  try { date = entry.submittedAt ? entry.submittedAt.substring(0, 10) : ''; } catch(ex) {}
+  var commentHtml = entry.comment
+    ? '<div class="fb-detail-comment">' + escapeHtml(entry.comment) + '</div>'
+    : '';
+  $('fb-detail-entry').innerHTML =
+    '<div class="fb-rating-hero">' +
+      '<span class="fb-rating-hero-emoji">' + emoji + '</span>' +
+      '<span class="fb-rating-hero-num">' + entry.rating + ' / 5</span>' +
+    '</div>' +
+    '<div class="fb-detail-meta">' +
+      '<strong>' + escapeHtml(entry.client || '') + '</strong><br>' +
+      escapeHtml((entry.month || '') + ' ' + (entry.year || '')) +
+      (date ? ' &nbsp;·&nbsp; ' + date : '') +
+    '</div>' +
+    commentHtml;
+}
+
+function fbShowStats() {
+  fbAdminState.showingStats = true;
+  fbAdminState.selectedIdx = -1;
+  var rows = $('fb-entry-list').querySelectorAll('.fb-entry-row');
+  for (var i = 0; i < rows.length; i++) rows[i].classList.remove('fb-selected');
+  $('fb-detail-empty').classList.add('hidden');
+  $('fb-detail-entry').classList.add('hidden');
+  $('fb-detail-stats').classList.remove('hidden');
+  fbRenderStats(fbAdminState.filtered);
+}
+
+function fbRenderStats(entries) {
+  var el = $('fb-detail-stats');
+  if (!entries || entries.length === 0) {
+    el.innerHTML = '<div class="fb-stats-empty">Sin datos para el período seleccionado.</div>';
+    return;
+  }
+  var sum = 0;
+  var dist = [0, 0, 0, 0, 0];
+  for (var i = 0; i < entries.length; i++) {
+    sum += entries[i].rating;
+    dist[entries[i].rating - 1]++;
+  }
+  var avg = Math.round((sum / entries.length) * 10) / 10;
+  var avgEmoji = FB_EMOJIS[Math.round(avg)] || '';
+  var maxDist = 0;
+  for (var d = 0; d < dist.length; d++) { if (dist[d] > maxDist) maxDist = dist[d]; }
+
+  var topScorers = [];
+  var lowScorers = [];
+  for (var j = 0; j < entries.length; j++) {
+    if (entries[j].rating === 5) topScorers.push(entries[j].client);
+    if (entries[j].rating <= 2) lowScorers.push(entries[j].client);
+  }
+
+  var distHtml = '';
+  for (var r = 5; r >= 1; r--) {
+    var count = dist[r - 1];
+    var pct = maxDist > 0 ? Math.round((count / maxDist) * 100) : 0;
+    distHtml +=
+      '<div class="fb-dist-row">' +
+        '<span class="fb-dist-emoji">' + FB_EMOJIS[r] + '</span>' +
+        '<div class="fb-dist-bar-wrap"><div class="fb-dist-bar" style="width:' + pct + '%"></div></div>' +
+        '<span class="fb-dist-count">' + count + '</span>' +
+      '</div>';
+  }
+
+  function scorerListHtml(names) {
+    if (!names.length) return '<li class="fb-scorer-item" style="color:var(--muted);">—</li>';
+    var h = '';
+    for (var k = 0; k < names.length; k++) h += '<li class="fb-scorer-item">' + escapeHtml(names[k]) + '</li>';
+    return h;
+  }
+
+  el.innerHTML =
+    '<div class="fb-stats-hero">' +
+      '<span class="fb-stats-avg-emoji">' + avgEmoji + '</span>' +
+      '<div class="fb-stats-avg-num">' + avg + '</div>' +
+      '<div class="fb-stats-sub">' + entries.length + (entries.length === 1 ? ' seller participó' : ' sellers participaron') + '</div>' +
+    '</div>' +
+    '<div>' +
+      '<div class="fb-stats-section-label">Distribución</div>' +
+      distHtml +
+    '</div>' +
+    '<div>' +
+      '<div class="fb-stats-section-label">Puntuación máxima 😄</div>' +
+      '<ul class="fb-scorer-list">' + scorerListHtml(topScorers) + '</ul>' +
+    '</div>' +
+    '<div>' +
+      '<div class="fb-stats-section-label">Puntuación baja 😞😕</div>' +
+      '<ul class="fb-scorer-list">' + scorerListHtml(lowScorers) + '</ul>' +
+    '</div>';
+}
+
+$('fb-toggle-input').addEventListener('change', function() {
+  var newVal = this.checked;
   this.disabled = true;
   gasGet({ action: 'setFeedbackEnabled', adminCode: state.adminCode, enabled: String(newVal) })
-    .then(function() { loadFeedbackView(); })
-    .catch(function() { $('fb-toggle-btn').disabled = false; });
+    .then(function(res) {
+      $('fb-toggle-input').disabled = false;
+      if (res && res.success) fbAdminState.enabled = res.feedbackEnabled;
+    })
+    .catch(function() {
+      $('fb-toggle-input').disabled = false;
+      $('fb-toggle-input').checked = fbAdminState.enabled;
+    });
+});
+
+$('fb-year').addEventListener('change', fbOnYearChange);
+
+$('fb-month').addEventListener('change', function() {
+  fbAdminState.selectedIdx = -1;
+  fbAdminState.showingStats = false;
+  fbApplyFilter();
+  fbRenderList();
+  fbShowDetailEmpty();
+});
+
+$('fb-btn-stats').addEventListener('click', fbShowStats);
+
+$('fb-entry-list').addEventListener('click', function(e) {
+  var row = e.target.closest('.fb-entry-row');
+  if (row) fbSelectEntry(parseInt(row.dataset.idx, 10));
 });
 
 elBtnFeedback.addEventListener('click', showFeedbackView);
