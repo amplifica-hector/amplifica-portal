@@ -1721,6 +1721,152 @@
       .ins-client-row.ins-selected { background: rgba(69, 72, 255, 0.18); }
       .ins-client-row:hover:not(.ins-selected) { background: rgba(255, 255, 255, 0.05); }
     }
+
+    /* ── Feedback FAB ─────────────────────────────────────────────────────── */
+    .feedback-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 18px;
+      height: 42px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      z-index: 100;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .feedback-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.22); }
+
+    /* ── Feedback Modal ───────────────────────────────────────────────────── */
+    .fb-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 200;
+    }
+    .fb-modal {
+      position: fixed;
+      bottom: 80px;
+      right: 24px;
+      width: 320px;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      z-index: 201;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    @media (max-width: 480px) {
+      .fb-modal { bottom: 0; right: 0; left: 0; width: 100%; border-radius: 16px 16px 0 0; }
+      .feedback-fab { bottom: 16px; right: 16px; }
+    }
+    .fb-modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .fb-modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .fb-modal-close {
+      width: 28px;
+      height: 28px;
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.12s;
+    }
+    .fb-modal-close:hover { background: var(--bg); color: var(--text); }
+    .fb-modal-body { padding: 16px; }
+    .fb-prompt { font-size: 13px; color: var(--text); line-height: 1.5; margin-bottom: 14px; text-align: center; }
+    .fb-emoji-row { display: flex; justify-content: space-between; margin-bottom: 14px; gap: 4px; }
+    .fb-emoji-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 6px 4px;
+      cursor: pointer;
+      flex: 1;
+      transition: all 0.12s;
+    }
+    .fb-emoji-btn .fb-emoji { font-size: 26px; line-height: 1; display: block; }
+    .fb-emoji-btn .fb-label { font-size: 9px; color: var(--muted); text-align: center; line-height: 1.2; font-family: inherit; display: block; }
+    .fb-emoji-btn:hover { background: var(--bg); }
+    .fb-emoji-btn.fb-selected { border-color: var(--navy); background: rgba(18,23,85,0.06); }
+    .fb-comment {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--white);
+      resize: none;
+      outline: none;
+      transition: border-color 0.15s;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .fb-comment:focus { border-color: var(--blue); }
+    .fb-thanks { text-align: center; padding: 24px 16px; }
+    .fb-thanks-icon { font-size: 36px; margin-bottom: 8px; line-height: 1; }
+    .fb-thanks-text { font-size: 14px; font-weight: 500; color: var(--text); }
+
+    /* ── Feedback Admin View ──────────────────────────────────────────────── */
+    .fb-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .fb-toggle-label { font-size: 14px; font-weight: 500; color: var(--text); }
+    .btn-sm { height: 32px; padding: 0 14px; font-size: 13px; }
+    .fb-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+    }
+    .fb-avg { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 700; color: var(--text); }
+    .fb-count { font-size: 13px; color: var(--muted); }
+    .fb-entries-list { display: flex; flex-direction: column; gap: 8px; }
+    .fb-entry { padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--white); }
+    .fb-entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .fb-entry-client { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+    .fb-entry-period { font-size: 12px; color: var(--muted); }
+    .fb-entry-rating { font-size: 18px; flex-shrink: 0; }
+    .fb-entry-comment { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+    .fb-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 20px 0; }
+
+    @media (prefers-color-scheme: dark) {
+      .feedback-fab { background: var(--blue); }
+      .fb-emoji-btn.fb-selected { border-color: var(--blue); background: rgba(69,72,255,0.1); }
+    }
   </style>
 </head>
 <body>
@@ -1927,6 +2073,10 @@
                 <div class="gap-sm"></div>
                 <button class="btn btn-outline btn-block" id="btn-inspector">
                   Inspector de Facturas
+                </button>
+                <div class="gap-sm"></div>
+                <button class="btn btn-outline btn-block" id="btn-feedback">
+                  💬 Feedback de clientes
                 </button>
               </div>
             </div>
@@ -2249,6 +2399,38 @@
       </div>
     </div>
 
+    <!-- ── View: Feedback de clientes ────────────────────────────────── -->
+    <div id="view-feedback" class="hidden">
+      <div class="card card-admin">
+        <div class="card-header">
+          <div class="card-back">
+            <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
+          </div>
+          <div class="card-title">💬 Feedback de clientes</div>
+          <div class="card-subtitle">Opiniones recibidas desde el portal</div>
+        </div>
+        <div class="card-body">
+          <div id="fb-loading">
+            <div class="spinner-row">
+              <div class="spinner-dots"><span></span><span></span><span></span></div>
+              Cargando feedback…
+            </div>
+          </div>
+          <div id="fb-content" class="hidden">
+            <div class="fb-toggle-row">
+              <span class="fb-toggle-label">Feedback en portal</span>
+              <button class="btn btn-sm" id="fb-toggle-btn"></button>
+            </div>
+            <div id="fb-stats-row" class="fb-stats-row hidden">
+              <div class="fb-avg" id="fb-avg-display"></div>
+              <div class="fb-count" id="fb-count-display"></div>
+            </div>
+            <div id="fb-entries" class="fb-entries-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -2284,6 +2466,34 @@
     <button class="btn-pdf-close" onclick="closeHelpPanel()">✕</button>
   </div>
   <div id="help-drawer-body" class="help-drawer-body"></div>
+</div>
+
+<!-- ── Feedback FAB + Modal ─────────────────────────────────────────────────── -->
+<button id="feedback-fab" class="feedback-fab hidden">💬 ¿Cómo te fue?</button>
+<div id="feedback-overlay" class="fb-modal-overlay hidden"></div>
+<div id="feedback-modal" class="fb-modal hidden">
+  <div class="fb-modal-head">
+    <span class="fb-modal-title">Tu opinión</span>
+    <button class="fb-modal-close" id="feedback-close">✕</button>
+  </div>
+  <div class="fb-modal-body">
+    <div id="feedback-form">
+      <p class="fb-prompt">¿Cómo fue tu experiencia con el portal este período?</p>
+      <div class="fb-emoji-row">
+        <button class="fb-emoji-btn" data-rating="1"><span class="fb-emoji">😞</span><span class="fb-label">Muy insatisfecho</span></button>
+        <button class="fb-emoji-btn" data-rating="2"><span class="fb-emoji">😕</span><span class="fb-label">Insatisfecho</span></button>
+        <button class="fb-emoji-btn" data-rating="3"><span class="fb-emoji">😐</span><span class="fb-label">Neutral</span></button>
+        <button class="fb-emoji-btn" data-rating="4"><span class="fb-emoji">😊</span><span class="fb-label">Satisfecho</span></button>
+        <button class="fb-emoji-btn" data-rating="5"><span class="fb-emoji">😄</span><span class="fb-label">Muy satisfecho</span></button>
+      </div>
+      <textarea id="feedback-comment" class="fb-comment" rows="3" maxlength="500" placeholder="Comentario opcional…"></textarea>
+      <button class="btn btn-primary" id="feedback-submit" style="width:100%;" disabled>Enviar opinión</button>
+    </div>
+    <div id="feedback-thanks" class="fb-thanks hidden">
+      <div class="fb-thanks-icon">🎉</div>
+      <div class="fb-thanks-text">¡Gracias por tu opinión!</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -2371,10 +2581,11 @@ var elAdminCodeError     = $('admin-code-error');
 var elBtnLinkGen         = $('btn-link-gen');
 var elBtnRenewal         = $('btn-renewal');
 var elBtnExplorer        = $('btn-explorer');
+var elBtnFeedback        = $('btn-feedback');
 
 // ── View switcher ──────────────────────────────────────────────────────────────
 function showView(viewId) {
-  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs', 'view-link-gen', 'view-renewal', 'view-explorer', 'view-inspector'];
+  var views = ['view-no-access', 'view-admin-prompt', 'view-boot', 'view-docs', 'view-link-gen', 'view-renewal', 'view-explorer', 'view-inspector', 'view-feedback'];
   for (var i = 0; i < views.length; i++) {
     $(views[i]).classList.add('hidden');
   }
@@ -2474,6 +2685,7 @@ function revealHeader() {
           clearTimeout(splashTimeout);
           dismissSplash(function() {
             if (result.success) {
+              result.token = urlToken.trim().toLowerCase();
               showDocumentView(result);
             } else {
               showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
@@ -2483,6 +2695,7 @@ function revealHeader() {
           // Splash already dismissed (4.5 s hit) — cancel any pending fallback and show result
           fallbackCancelled = true;
           if (result.success) {
+            result.token = urlToken.trim().toLowerCase();
             showDocumentView(result);
           } else {
             showTokenAccessError(result.error || 'No pudimos verificar tu enlace de acceso.');
@@ -2787,6 +3000,7 @@ function showDocumentView(data) {
     $('dash-wrapper').classList.add('hidden');
     renderFileList(data.files);
   }
+  updateFeedbackFab(data);
 }
 
 function exitDocView() {
@@ -2797,6 +3011,8 @@ function exitDocView() {
   $('doc-card').classList.remove('hidden');
   $('dash-wrapper').classList.add('hidden');
   if (dashChart) { dashChart.destroy(); dashChart = null; }
+  $('feedback-fab').classList.add('hidden');
+  closeFeedbackModal();
   if (state.adminMode) {
     showAdminPanel();
   } else {
@@ -4875,6 +5091,175 @@ $('ins-btn-clear').addEventListener('click', insClearConsole);
     });
   });
 }());
+
+// ── Feedback FAB & Modal ────────────────────────────────────────────────────────
+
+var fbState = { rating: 0, busy: false };
+var FB_EMOJIS = ['', '😞', '😕', '😐', '😊', '😄'];
+
+function updateFeedbackFab(data) {
+  var fab = $('feedback-fab');
+  if (!fab) return;
+  if (!data || !data.feedbackEnabled || !data.token || state.adminMode) {
+    fab.classList.add('hidden');
+    return;
+  }
+  var lsKey = 'fb_' + data.client + '_' + data.year + '_' + data.month;
+  if (localStorage.getItem(lsKey)) {
+    fab.classList.add('hidden');
+    return;
+  }
+  fab.classList.remove('hidden');
+}
+
+function openFeedbackModal() {
+  resetFeedbackForm();
+  $('feedback-overlay').classList.remove('hidden');
+  $('feedback-modal').classList.remove('hidden');
+}
+
+function closeFeedbackModal() {
+  $('feedback-overlay').classList.add('hidden');
+  $('feedback-modal').classList.add('hidden');
+}
+
+function resetFeedbackForm() {
+  fbState.rating = 0;
+  fbState.busy = false;
+  var btns = document.querySelectorAll('.fb-emoji-btn');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('fb-selected');
+  $('feedback-comment').value = '';
+  $('feedback-submit').disabled = true;
+  $('feedback-submit').textContent = 'Enviar opinión';
+  $('feedback-form').classList.remove('hidden');
+  $('feedback-thanks').classList.add('hidden');
+}
+
+(function wireFeedback() {
+  $('feedback-fab').addEventListener('click', openFeedbackModal);
+  $('feedback-overlay').addEventListener('click', closeFeedbackModal);
+  $('feedback-close').addEventListener('click', closeFeedbackModal);
+
+  var emojiBtns = document.querySelectorAll('.fb-emoji-btn');
+  for (var i = 0; i < emojiBtns.length; i++) {
+    emojiBtns[i].addEventListener('click', function() {
+      fbState.rating = parseInt(this.dataset.rating, 10);
+      for (var j = 0; j < emojiBtns.length; j++) emojiBtns[j].classList.remove('fb-selected');
+      this.classList.add('fb-selected');
+      $('feedback-submit').disabled = false;
+    });
+  }
+
+  $('feedback-submit').addEventListener('click', function() {
+    if (fbState.busy || !fbState.rating || !currentDocData || !currentDocData.token) return;
+    fbState.busy = true;
+    var submitBtn = $('feedback-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando…';
+    var comment = $('feedback-comment').value.trim();
+    gasGet({ action: 'submitFeedback', token: currentDocData.token, rating: fbState.rating, comment: comment })
+      .then(function(res) {
+        var isAlreadyDone = (res && res.error === 'already_submitted');
+        if ((res && res.success) || isAlreadyDone) {
+          var lsKey = 'fb_' + currentDocData.client + '_' + currentDocData.year + '_' + currentDocData.month;
+          try { localStorage.setItem(lsKey, '1'); } catch(e) {}
+          $('feedback-form').classList.add('hidden');
+          $('feedback-thanks').classList.remove('hidden');
+          $('feedback-fab').classList.add('hidden');
+          setTimeout(closeFeedbackModal, 2000);
+        } else {
+          fbState.busy = false;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Enviar opinión';
+        }
+      })
+      .catch(function() {
+        fbState.busy = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar opinión';
+      });
+  });
+}());
+
+// ── Feedback Admin View ─────────────────────────────────────────────────────────
+
+var fbAdminState = { enabled: false };
+
+function showFeedbackView() {
+  showView('view-feedback');
+  loadFeedbackView();
+}
+
+function loadFeedbackView() {
+  $('fb-loading').classList.remove('hidden');
+  $('fb-content').classList.add('hidden');
+  gasGet({ action: 'getFeedback', adminCode: state.adminCode })
+    .then(function(res) {
+      $('fb-loading').classList.add('hidden');
+      if (!res || !res.success) return;
+      renderFeedbackAdmin(res);
+    })
+    .catch(function() {
+      $('fb-loading').classList.add('hidden');
+    });
+}
+
+function renderFeedbackAdmin(data) {
+  fbAdminState.enabled = data.feedbackEnabled;
+
+  var toggleBtn = $('fb-toggle-btn');
+  if (data.feedbackEnabled) {
+    toggleBtn.textContent = 'Activo ✓';
+    toggleBtn.className = 'btn btn-primary btn-sm';
+  } else {
+    toggleBtn.textContent = 'Inactivo';
+    toggleBtn.className = 'btn btn-outline btn-sm';
+  }
+
+  var statsRow = $('fb-stats-row');
+  if (data.totalCount > 0) {
+    var avgEmoji = FB_EMOJIS[Math.round(data.avgRating)] || '';
+    $('fb-avg-display').textContent = avgEmoji + ' ' + data.avgRating;
+    $('fb-count-display').textContent = data.totalCount + (data.totalCount === 1 ? ' respuesta' : ' respuestas');
+    statsRow.classList.remove('hidden');
+  } else {
+    statsRow.classList.add('hidden');
+  }
+
+  var list = $('fb-entries');
+  list.innerHTML = '';
+  if (!data.entries || data.entries.length === 0) {
+    list.innerHTML = '<div class="fb-empty">Aún no hay opiniones recibidas.</div>';
+  } else {
+    for (var i = 0; i < data.entries.length; i++) {
+      var e = data.entries[i];
+      var date = '';
+      try { date = e.submittedAt ? e.submittedAt.substring(0, 10) : ''; } catch(ex) {}
+      var commentHtml = e.comment ? '<div class="fb-entry-comment">' + escapeHtml(e.comment) + '</div>' : '';
+      var html = '<div class="fb-entry">' +
+        '<div class="fb-entry-header">' +
+          '<span class="fb-entry-client">' + escapeHtml(e.client || '') + '</span>' +
+          '<span class="fb-entry-period">' + escapeHtml((e.month || '') + ' ' + (e.year || '')) + '</span>' +
+          '<span class="fb-entry-rating">' + (FB_EMOJIS[e.rating] || e.rating) + '</span>' +
+        '</div>' +
+        commentHtml +
+      '</div>';
+      list.innerHTML += html;
+    }
+  }
+
+  $('fb-content').classList.remove('hidden');
+}
+
+$('fb-toggle-btn').addEventListener('click', function() {
+  var newVal = !fbAdminState.enabled;
+  this.disabled = true;
+  gasGet({ action: 'setFeedbackEnabled', adminCode: state.adminCode, enabled: String(newVal) })
+    .then(function() { loadFeedbackView(); })
+    .catch(function() { $('fb-toggle-btn').disabled = false; });
+});
+
+elBtnFeedback.addEventListener('click', showFeedbackView);
 
 </script>
 </body>
