@@ -1066,7 +1066,10 @@
     .help-item-body { flex: 1; min-width: 0; }
     .help-item-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
     .help-item-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
-    .help-item-amount { font-size: 15px; font-weight: 700; color: var(--navy); }
+    .help-item-amounts { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+    .help-amount-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+    .help-amount-row.help-amount-total { font-size: 14px; font-weight: 700; color: var(--blue); border-top: 1px solid var(--border); padding-top: 4px; margin-top: 2px; }
+    .help-amount-val { font-variant-numeric: tabular-nums; }
     /* ── Inspector row rework ────────────────────────────────────────────── */
     .ins-client-row {
       display: flex;
@@ -3355,7 +3358,14 @@ function openHelpPanel(help, periodLabel) {
       if (item.descripcion) {
         html += '<div class="help-item-desc">' + escapeHtml(item.descripcion) + '</div>';
       }
-      html += '<div class="help-item-amount">' + fmtCLP(item.neto || 0) + '</div>';
+      var iNeto  = item.neto || 0;
+      var iIva   = Math.round(iNeto * 0.19);
+      var iTotal = iNeto + iIva;
+      html += '<div class="help-item-amounts">' +
+        '<span class="help-amount-row"><span class="help-amount-label">Neto</span><span class="help-amount-val">' + fmtCLP(iNeto) + '</span></span>' +
+        '<span class="help-amount-row"><span class="help-amount-label">IVA 19%</span><span class="help-amount-val">' + fmtCLP(iIva) + '</span></span>' +
+        '<span class="help-amount-row help-amount-total"><span class="help-amount-label">Total</span><span class="help-amount-val">' + fmtCLP(iTotal) + '</span></span>' +
+      '</div>';
       html += '</div>';
       html += '</div>';
     }
@@ -3946,7 +3956,7 @@ $('btn-explore').addEventListener('click', function() {
     var r   = results[0];
     var cfg = results[1];
     if (!r.success) { showInlineError('explorer-error', r.error || 'Error al cargar los documentos.'); return; }
-    var configData = (cfg && cfg.success && cfg.invoices) ? { invoices: cfg.invoices, meta: cfg.meta } : null;
+    var configData = (cfg && cfg.success && cfg.invoices) ? { invoices: cfg.invoices, meta: cfg.meta, help: cfg.help || null } : null;
     showDocumentView({ client: client, year: year, month: month, files: r.files, configData: configData });
   }).catch(function() {
     btn.disabled = false; btn.textContent = 'Ver documentos';
