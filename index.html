@@ -1199,6 +1199,7 @@
       margin-bottom: 2px;
     }
     .dash-client-period { font-size: 13px; color: rgba(255,255,255,0.55); }
+    .dash-client-rut    { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
 
     .dash-kpi-bar {
       display: grid;
@@ -3761,12 +3762,24 @@ function fmtCLP(n) {
 }
 
 function makePdfLabel(inv) {
+  if (inv.fileName) {
+    return inv.fileName.replace(/\.pdf$/i, '');
+  }
   var tipo  = (inv.tipo || '').toUpperCase();
   var short = tipo.indexOf('NOTA') !== -1    ? 'N. Crédito'
             : tipo.indexOf('LIQUID') !== -1  ? 'Liquidación'
             : 'Factura';
   var client = (currentDocData && currentDocData.client) ? ' — ' + currentDocData.client : '';
   return short + ' #' + (inv.folio || '') + client;
+}
+
+function getInvGrupo(inv) {
+  if (!inv.fileName) return null;
+  var tipo = (inv.tipo || '').toUpperCase();
+  if (tipo.indexOf('FACTURA') === -1 || tipo.indexOf('NOTA') !== -1) return null;
+  var stem = inv.fileName.replace(/\.pdf$/i, '');
+  var idx  = stem.lastIndexOf(' - ');
+  return idx !== -1 ? stem.substring(idx + 3) : null;
 }
 
 function formatDateShort(dateStr) {
@@ -3922,9 +3935,10 @@ function rebuildDashTable() {
       if (hasFile) tr.className = 'has-file';
 
       var tdFolio = document.createElement('td');
+      var invGrupo = getInvGrupo(inv);
       tdFolio.innerHTML =
         '<div class="inv-folio">' + escapeHtml(inv.folio || '') + '</div>' +
-        '<div class="inv-tipo">'  + escapeHtml(inv.tipo  || '') + '</div>' +
+        '<div class="inv-tipo">'  + escapeHtml(invGrupo || inv.tipo || '') + '</div>' +
         (inv.docRef ? '<div class="inv-docref">Ref. Folio ' + escapeHtml(inv.docRef) + '</div>' : '');
       tr.appendChild(tdFolio);
 
@@ -4189,6 +4203,7 @@ function renderDashboard(data) {
       if (folio && !dashInvoices[k].fileId && fname.indexOf('-' + folio + '-') !== -1) {
         dashInvoices[k].fileId   = rawFiles[f].id;
         dashInvoices[k].mimeType = rawFiles[f].mimeType;
+        dashInvoices[k].fileName = rawFiles[f].name;
       }
     }
   }
@@ -4219,16 +4234,6 @@ function renderDashboard(data) {
   var venc        = (dashMeta && dashMeta.vencimiento) ? formatDateShort(dashMeta.vencimiento) : derivedVenc;
   var netTotal    = totalOverdue + totalCurrent - totalCreditos;
 
-  // KPI: client info
-  var kpiClient =
-    '<div class="dash-kpi-card">' +
-      '<div class="dash-kpi-label">Cliente</div>' +
-      '<div class="dash-kpi-value">' + escapeHtml(data.client) + '</div>' +
-      '<div class="dash-kpi-sub">' +
-        ((dashMeta && dashMeta.rut) ? escapeHtml(dashMeta.rut) + ' · ' : '') +
-        escapeHtml(data.month) + ' ' + escapeHtml(data.year) +
-      '</div>' +
-    '</div>';
 
   // KPI: historical chart
   var hist = dashMeta && dashMeta.historial && dashMeta.historial.length;
@@ -4296,6 +4301,7 @@ function renderDashboard(data) {
         '<div>' +
           '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
           '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
+          ((dashMeta && dashMeta.rut) ? '<div class="dash-client-rut">' + escapeHtml(dashMeta.rut) + '</div>' : '') +
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px;">' +
           (data.configData && data.configData.help && data.configData.help.length
@@ -4304,7 +4310,7 @@ function renderDashboard(data) {
           '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
         '</div>' +
       '</div>' +
-      '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
+      '<div class="dash-kpi-bar">' + kpiChart + kpiPayable + '</div>' +
       '<div class="dash-table-section">' +
         '<div class="dash-tabs-bar">' +
           '<button class="dash-tab' + tab1Active + '" data-tab="overdue">Por pagar</button>' +
