@@ -1456,7 +1456,6 @@
 
     /* ── Mobile: narrow-screen overrides ─────────────────────────────── */
     @media (max-width: 599px) {
-      .main { justify-content: flex-start; }
       .dash-header { flex-direction: column; align-items: flex-start; gap: 12px; }
     }
 
@@ -1919,6 +1918,10 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
+          <picture class="ins-icon-wrap">
+            <source srcset="Assets/url_generator/url_generator_dark.png" media="(prefers-color-scheme: dark)">
+            <img src="Assets/url_generator/url_generator_light.png" alt="" class="ins-title-icon">
+          </picture>
           <div class="card-title">Generador de enlaces</div>
           <div class="card-subtitle">Crea un enlace de acceso directo para un cliente</div>
         </div>
@@ -1982,6 +1985,10 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
+          <picture class="ins-icon-wrap">
+            <source srcset="Assets/token_renewer/token_renewer_dark.png" media="(prefers-color-scheme: dark)">
+            <img src="Assets/token_renewer/token_renewer_light.png" alt="" class="ins-title-icon">
+          </picture>
           <div class="card-title">Renovar acceso vencido</div>
           <div class="card-subtitle">Extiende la vigencia de un token vencido</div>
         </div>
@@ -2022,6 +2029,10 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
+          <picture class="ins-icon-wrap">
+            <source srcset="Assets/cases_explorer/cases_explorer_dark.png" media="(prefers-color-scheme: dark)">
+            <img src="Assets/cases_explorer/cases_explorer_light.png" alt="" class="ins-title-icon">
+          </picture>
           <div class="card-title">Explorador de casos</div>
           <div class="card-subtitle">Accede directamente a los documentos de un cliente</div>
         </div>
