@@ -372,6 +372,11 @@
 
     .msg-warning-icon { flex-shrink: 0; font-size: 16px; }
 
+    .regen-warning { background: var(--error-bg); border: 1px solid #f87171; border-radius: var(--radius-md); padding: 14px 16px; margin-top: 10px; font-size: 13px; }
+    .regen-warning-msg { color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+    .regen-warning-btns { display: flex; gap: 8px; }
+    .regen-warning-btns .btn { flex: 1; font-size: 13px; height: 34px; padding: 0 12px; }
+
     /* ── Divider ──────────────────────────────────────────────────────── */
     .divider {
       border: none;
@@ -1541,8 +1546,8 @@
     }
     .ins-controls-header { display: flex; flex-direction: column; gap: 2px; padding-bottom: 4px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .ins-title { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
-    .ins-icon-wrap  { display: flex; justify-content: center; margin: 8px 0 4px; }
-    .ins-title-icon { height: 48px; width: auto; }
+    .tool-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .tool-icon      { height: 32px; width: auto; flex-shrink: 0; }
     .ins-tabs { display: flex; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0; }
     .ins-tab {
       flex: 1; padding: 5px 2px; font-size: 11px; font-family: inherit; font-weight: 500;
@@ -1882,6 +1887,13 @@
                   <button class="btn-link" id="btn-regen">
                     Regenerar tokens de acceso
                   </button>
+                  <div id="regen-warning" class="regen-warning hidden">
+                    <div class="regen-warning-msg">⚠ Este proceso puede tardar varios minutos y <strong>no puede cancelarse</strong> una vez iniciado. Ejecútalo solo para reparar archivos dañados o incorporar un período nuevo.</div>
+                    <div class="regen-warning-btns">
+                      <button class="btn btn-outline" id="btn-regen-cancel">Cancelar</button>
+                      <button class="btn btn-primary" id="btn-regen-confirm">Continuar →</button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="boot-col">
@@ -1918,11 +1930,13 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
-          <picture class="ins-icon-wrap">
-            <source srcset="Assets/url_generator/url_generator_dark.png" media="(prefers-color-scheme: dark)">
-            <img src="Assets/url_generator/url_generator_light.png" alt="" class="ins-title-icon">
-          </picture>
-          <div class="card-title">Generador de enlaces</div>
+          <div class="tool-title-row">
+            <picture>
+              <source srcset="Assets/url_generator/url_generator_dark.png" media="(prefers-color-scheme: dark)">
+              <img src="Assets/url_generator/url_generator_light.png" alt="" class="tool-icon">
+            </picture>
+            <div class="card-title">Generador de enlaces</div>
+          </div>
           <div class="card-subtitle">Crea un enlace de acceso directo para un cliente</div>
         </div>
         <div class="card-body">
@@ -1985,11 +1999,13 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
-          <picture class="ins-icon-wrap">
-            <source srcset="Assets/token_renewer/token_renewer_dark.png" media="(prefers-color-scheme: dark)">
-            <img src="Assets/token_renewer/token_renewer_light.png" alt="" class="ins-title-icon">
-          </picture>
-          <div class="card-title">Renovar acceso vencido</div>
+          <div class="tool-title-row">
+            <picture>
+              <source srcset="Assets/token_renewer/token_renewer_dark.png" media="(prefers-color-scheme: dark)">
+              <img src="Assets/token_renewer/token_renewer_light.png" alt="" class="tool-icon">
+            </picture>
+            <div class="card-title">Renovar acceso vencido</div>
+          </div>
           <div class="card-subtitle">Extiende la vigencia de un token vencido</div>
         </div>
         <div class="card-body">
@@ -2029,11 +2045,13 @@
           <div class="card-back">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
           </div>
-          <picture class="ins-icon-wrap">
-            <source srcset="Assets/cases_explorer/cases_explorer_dark.png" media="(prefers-color-scheme: dark)">
-            <img src="Assets/cases_explorer/cases_explorer_light.png" alt="" class="ins-title-icon">
-          </picture>
-          <div class="card-title">Explorador de casos</div>
+          <div class="tool-title-row">
+            <picture>
+              <source srcset="Assets/cases_explorer/cases_explorer_dark.png" media="(prefers-color-scheme: dark)">
+              <img src="Assets/cases_explorer/cases_explorer_light.png" alt="" class="tool-icon">
+            </picture>
+            <div class="card-title">Explorador de casos</div>
+          </div>
           <div class="card-subtitle">Accede directamente a los documentos de un cliente</div>
         </div>
         <div class="card-body">
@@ -2126,11 +2144,13 @@
         <div class="ins-controls">
           <div class="ins-controls-header">
             <button class="btn-link" onclick="showAdminPanel()">← Volver al panel</button>
-            <picture class="ins-icon-wrap">
-              <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
-              <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" class="ins-title-icon">
-            </picture>
-            <div class="ins-title">Inspector de Facturas</div>
+            <div class="tool-title-row">
+              <picture>
+                <source srcset="Assets/invoice_inspector/invoice_inspector_icon_dark.png" media="(prefers-color-scheme: dark)">
+                <img src="Assets/invoice_inspector/invoice_inspector_icon_light.png" alt="" class="tool-icon">
+              </picture>
+              <div class="ins-title">Inspector de Facturas</div>
+            </div>
           </div>
 
           <!-- Tool tabs -->
@@ -2641,6 +2661,15 @@ elBtnFirstrunGenerate.addEventListener('click', function() {
 });
 
 elBtnRegen.addEventListener('click', function() {
+  $('regen-warning').classList.remove('hidden');
+});
+
+$('btn-regen-cancel').addEventListener('click', function() {
+  $('regen-warning').classList.add('hidden');
+});
+
+$('btn-regen-confirm').addEventListener('click', function() {
+  $('regen-warning').classList.add('hidden');
   elNormalGenArea.classList.remove('hidden');
   startGeneration(elNormalGenArea, null);
 });
@@ -3286,6 +3315,15 @@ function fmtCLP(n) {
   } catch (e) { return '$' + n; }
 }
 
+function makePdfLabel(inv) {
+  var tipo  = (inv.tipo || '').toUpperCase();
+  var short = tipo.indexOf('NOTA') !== -1    ? 'N. Crédito'
+            : tipo.indexOf('LIQUID') !== -1  ? 'Liquidación'
+            : 'Factura';
+  var client = (currentDocData && currentDocData.client) ? ' — ' + currentDocData.client : '';
+  return short + ' #' + (inv.folio || '') + client;
+}
+
 function formatDateShort(dateStr) {
   try {
     var d = new Date(dateStr + 'T12:00:00');
@@ -3482,7 +3520,7 @@ function rebuildDashTable() {
 
         btnPrev.addEventListener('click', function (e) {
           e.stopPropagation();
-          openPdfDrawer(inv.fileId, inv.mimeType, inv.folio);
+          openPdfDrawer(inv.fileId, inv.mimeType, makePdfLabel(inv));
         });
 
         btnDl.addEventListener('click', function (e) {
@@ -3509,7 +3547,7 @@ function rebuildDashTable() {
 
         tr.addEventListener('click', function (e) {
           if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview') || e.target.closest('.btn-expand')) return;
-          openPdfDrawer(inv.fileId, inv.mimeType, inv.folio);
+          openPdfDrawer(inv.fileId, inv.mimeType, makePdfLabel(inv));
         });
 
         tdAct.appendChild(btnPrev);
