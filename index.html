@@ -988,6 +988,164 @@
       background: #f0f0f0;
     }
 
+    /* ── Help Drawer ─────────────────────────────────────────────────────── */
+    #help-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    #help-overlay.open { opacity: 1; pointer-events: auto; }
+    #help-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 90vw;
+      background: var(--white);
+      box-shadow: -4px 0 32px rgba(0,0,0,0.18);
+      z-index: 900;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(110%);
+      transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+    }
+    #help-drawer.open { transform: translateX(0); }
+    @media (min-width: 768px) { #help-drawer { width: 480px; } }
+    .help-drawer-head {
+      background: var(--navy);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .help-drawer-meta { min-width: 0; flex: 1; }
+    .help-drawer-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--yellow);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 3px;
+    }
+    .help-drawer-period {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .help-drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .help-group { margin-bottom: 28px; }
+    .help-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .help-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .help-item:last-child { border-bottom: none; }
+    .help-item-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; line-height: 1; }
+    .help-item-body { flex: 1; min-width: 0; }
+    .help-item-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+    .help-item-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+    .help-item-amount { font-size: 15px; font-weight: 700; color: var(--navy); }
+    /* ── Inspector row rework ────────────────────────────────────────────── */
+    .ins-client-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px 5px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.1s;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .ins-client-row:hover { background: var(--bg); }
+    .ins-client-row.ins-selected { background: #eef2ff; }
+    .ins-row-line1 { display: flex; align-items: center; gap: 5px; }
+    .ins-row-line2 { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+    .ins-pills { display: flex; gap: 4px; flex: 1; }
+    .ins-pill {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .ins-pill-ok      { background: #dcfce7; color: #16a34a; }
+    .ins-pill-miss    { background: #fee2e2; color: #dc2626; }
+    .ins-pill-pending { background: #f1f5f9; color: #94a3b8; }
+    .ins-row-actions { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .ins-regen-btn {
+      font-size: 13px;
+      width: 26px;
+      height: 22px;
+      border: 1px solid var(--blue);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--blue);
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .ins-regen-btn:hover { background: rgba(18,23,85,0.08); }
+    .ins-regen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .ins-helpgen-btn {
+      font-size: 9px;
+      padding: 2px 5px;
+      height: 22px;
+      border: 1px solid #e97316;
+      border-radius: 4px;
+      background: transparent;
+      color: #e97316;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .ins-helpgen-btn:hover { background: rgba(233,115,22,0.08); }
+    .ins-helpgen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* ── Ayuda button in dash-header ────────────────────────────────────── */
+    .btn-ayuda {
+      height: 32px;
+      padding: 0 14px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn-ayuda:hover { background: rgba(255,255,255,0.18); }
+
     /* ── Dashboard ────────────────────────────────────────────────────────── */
     #dash-wrapper {
       width: 100%;
@@ -2054,6 +2212,19 @@
     Cargando documento…
   </div>
   <iframe id="pdf-frame" title="Previsualización de documento" style="display:none;"></iframe>
+</div>
+
+<!-- ── Help Drawer ──────────────────────────────────────────────────────────── -->
+<div id="help-overlay"></div>
+<div id="help-drawer">
+  <div class="help-drawer-head">
+    <div class="help-drawer-meta">
+      <div class="help-drawer-label">Detalle de servicios</div>
+      <div class="help-drawer-period" id="help-drawer-period"></div>
+    </div>
+    <button class="btn-pdf-close" onclick="closeHelpPanel()">✕</button>
+  </div>
+  <div id="help-drawer-body" class="help-drawer-body"></div>
 </div>
 
 <script>
@@ -3163,6 +3334,43 @@ function closePdfDrawer() {
   $('pdf-frame').src = 'about:blank';
 }
 
+// ── Help Panel ─────────────────────────────────────────────────────────────────
+
+$('help-overlay').addEventListener('click', closeHelpPanel);
+
+function openHelpPanel(help, periodLabel) {
+  $('help-drawer-period').textContent = periodLabel || '';
+  var body = $('help-drawer-body');
+  var html = '';
+  for (var g = 0; g < help.length; g++) {
+    var group = help[g];
+    html += '<div class="help-group">';
+    html += '<div class="help-group-title">' + escapeHtml(group.icono || '') + ' ' + escapeHtml(group.nombre || '') + '</div>';
+    for (var i = 0; i < group.items.length; i++) {
+      var item = group.items[i];
+      html += '<div class="help-item">';
+      html += '<div class="help-item-icon">' + escapeHtml(item.icono || '🔹') + '</div>';
+      html += '<div class="help-item-body">';
+      html += '<div class="help-item-name">' + escapeHtml(item.nombre || '') + '</div>';
+      if (item.descripcion) {
+        html += '<div class="help-item-desc">' + escapeHtml(item.descripcion) + '</div>';
+      }
+      html += '<div class="help-item-amount">' + fmtCLP(item.neto || 0) + '</div>';
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  body.innerHTML = html;
+  $('help-overlay').classList.add('open');
+  $('help-drawer').classList.add('open');
+}
+
+function closeHelpPanel() {
+  $('help-overlay').classList.remove('open');
+  $('help-drawer').classList.remove('open');
+}
+
 // ── Dashboard rendering ────────────────────────────────────────────────────────
 
 function getFilteredSortedInvoices() {
@@ -3561,7 +3769,12 @@ function renderDashboard(data) {
           '<div class="dash-client-name">' + escapeHtml(data.client) + '</div>' +
           '<div class="dash-client-period">' + escapeHtml(data.month) + ' ' + escapeHtml(data.year) + '</div>' +
         '</div>' +
-        '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          (data.configData && data.configData.help && data.configData.help.length
+            ? '<button class="btn-ayuda" id="dash-btn-ayuda">❓ Ayuda</button>'
+            : '') +
+          '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
+        '</div>' +
       '</div>' +
       '<div class="dash-kpi-bar">' + kpiClient + kpiChart + kpiPayable + '</div>' +
       '<div class="dash-table-section">' +
@@ -3642,6 +3855,13 @@ function renderDashboard(data) {
   renderHistoryChart((dashMeta && dashMeta.historial) || []);
   alignDashHeader();
   document.fonts.ready.then(alignDashHeader);
+
+  var dashAyudaBtn = $('dash-btn-ayuda');
+  if (dashAyudaBtn) {
+    (function (help, periodLabel) {
+      dashAyudaBtn.addEventListener('click', function () { openHelpPanel(help, periodLabel); });
+    })(data.configData.help, data.month + ' ' + data.year);
+  }
 
   var dashDlBtn = $('dash-btn-download-all');
   if (dashDlBtn) {
@@ -3874,29 +4094,39 @@ function insRunInspectPeriod() {
         insLog('Error: ' + r.error, 'error');
         return;
       }
-      insState.clients = r.clients.map(function(c) { return { name: c.name, folderId: c.folderId, hasConfig: false, pdfCount: 0 }; });
+      insState.clients = r.clients.map(function(c) { return { name: c.name, folderId: c.folderId, hasConfig: false, hasHelp: false, pdfCount: 0 }; });
       renderInsClientList(insState.clients, true);
       insLog(r.clients.length + ' cliente(s) encontrado(s). Verificando estado…', 'info');
       var promises = r.clients.map(function(client) {
         return gasGet({ action: 'getClientStatus', adminCode: state.adminCode, folderId: client.folderId }, 30000)
           .then(function(s) {
-            var status = s.success ? s : { pdfCount: 0, hasConfig: false, configUpdated: null };
+            var status = s.success ? s : { pdfCount: 0, hasConfig: false, hasHelp: false, configUpdated: null };
             updateClientRow(client, status);
             for (var ci = 0; ci < insState.clients.length; ci++) {
               if (insState.clients[ci].folderId === client.folderId) {
                 insState.clients[ci].hasConfig = status.hasConfig;
+                insState.clients[ci].hasHelp   = status.hasHelp;
                 insState.clients[ci].pdfCount  = status.pdfCount;
                 break;
               }
             }
           })
-          .catch(function() { updateClientRow(client, { pdfCount: 0, hasConfig: false, configUpdated: null }); });
+          .catch(function() { updateClientRow(client, { pdfCount: 0, hasConfig: false, hasHelp: false, configUpdated: null }); });
       });
       Promise.all(promises).then(function() {
         insState.busy = false;
         $('ins-btn-verify').disabled = false;
-        var missing = insState.clients.filter(function(c) { return !c.hasConfig; }).length;
-        insLog('Listo. ' + missing + ' sin config.', missing > 0 ? 'warn' : 'success');
+        var total       = insState.clients.length;
+        var missingInv  = insState.clients.filter(function(c) { return !c.hasConfig; }).length;
+        var missingHelp = insState.clients.filter(function(c) { return !c.hasHelp; }).length;
+        if (missingInv === 0 && missingHelp === 0) {
+          insLog('✓ ' + total + '/' + total + ' sellers con invoices.json y help.json.', 'success');
+        } else {
+          var parts = [];
+          if (missingInv  > 0) parts.push(missingInv  + ' sin invoices.json');
+          if (missingHelp > 0) parts.push(missingHelp + ' sin help.json');
+          insLog('⚠ ' + parts.join('  |  '), 'warn');
+        }
         if (insState.clients.length > 0) $('ins-rename-global-wrap').classList.remove('hidden');
         insState.renamePlan = [];
       });
@@ -3908,32 +4138,123 @@ function insRunInspectPeriod() {
     });
 }
 
+function buildClientRowContent(row, client, status) {
+  row.innerHTML = '';
+  // Line 1: name + pdf count
+  var line1 = document.createElement('div');
+  line1.className = 'ins-row-line1';
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'ins-client-name';
+  nameSpan.textContent = client.name;
+  line1.appendChild(nameSpan);
+  if (status && status.pdfCount > 0) {
+    var pdfSpan = document.createElement('span');
+    pdfSpan.className = 'ins-pdf-count';
+    pdfSpan.textContent = status.pdfCount + 'p';
+    line1.appendChild(pdfSpan);
+  }
+  row.appendChild(line1);
+  // Line 2: pills + actions
+  var line2 = document.createElement('div');
+  line2.className = 'ins-row-line2';
+  var pills = document.createElement('div');
+  pills.className = 'ins-pills';
+  var invCls = !status ? 'ins-pill-pending' : (status.hasConfig ? 'ins-pill-ok' : 'ins-pill-miss');
+  var hlpCls = !status ? 'ins-pill-pending' : (status.hasHelp  ? 'ins-pill-ok' : 'ins-pill-miss');
+  var invTtl = !status ? 'Verificando…' : (status.hasConfig ? 'invoices.json presente' : 'invoices.json no encontrado');
+  var hlpTtl = !status ? 'Verificando…' : (status.hasHelp  ? 'help.json presente'     : 'help.json no encontrado');
+  pills.innerHTML = '<span class="ins-pill ' + invCls + '" title="' + invTtl + '">inv</span>' +
+                    '<span class="ins-pill ' + hlpCls + '" title="' + hlpTtl + '">hlp</span>';
+  line2.appendChild(pills);
+  if (status) {
+    var actions = document.createElement('div');
+    actions.className = 'ins-row-actions';
+    if (status.hasConfig) {
+      (function() {
+        var verBtn = document.createElement('button');
+        verBtn.className = 'ins-row-btn';
+        verBtn.textContent = 'Ver';
+        verBtn.title = 'Cargar invoices.json en consola';
+        verBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+          row.classList.add('ins-selected');
+          insSetClient(client);
+          insRunLoadConfig(this);
+        });
+        actions.appendChild(verBtn);
+      })();
+    }
+    (function() {
+      var regenBtn = document.createElement('button');
+      regenBtn.className = 'ins-regen-btn';
+      regenBtn.textContent = '⟳';
+      regenBtn.title = status.hasConfig ? 'Regenerar configuración' : 'Generar configuración';
+      regenBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+        row.classList.add('ins-selected');
+        insSetClient(client);
+        insRunGenerate(client, row);
+      });
+      actions.appendChild(regenBtn);
+    })();
+    if (status.hasConfig && !status.hasHelp) {
+      (function() {
+        var hlpBtn = document.createElement('button');
+        hlpBtn.className = 'ins-helpgen-btn';
+        hlpBtn.textContent = '⟳hlp';
+        hlpBtn.title = 'Generar help.json (sin reprocesar PDFs)';
+        hlpBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
+          row.classList.add('ins-selected');
+          insSetClient(client);
+          insRunGenerateHelp(client, row);
+        });
+        actions.appendChild(hlpBtn);
+      })();
+    }
+    line2.appendChild(actions);
+  }
+  row.appendChild(line2);
+  row.classList.toggle('ins-missing', !!status && !status.hasConfig);
+}
+
+function insRunGenerateHelp(client, rowEl) {
+  if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
+  insState.busy = true;
+  var hlpBtn = rowEl ? rowEl.querySelector('.ins-helpgen-btn') : null;
+  if (hlpBtn) { hlpBtn.disabled = true; hlpBtn.textContent = '…'; }
+  insLog('▶ Generando help.json: ' + client.name, 'info');
+  gasGet({ action: 'generateClientHelp', adminCode: state.adminCode, folderId: client.folderId }, 30000)
+    .then(function(r) {
+      insState.busy = false;
+      if (!r.success) {
+        if (hlpBtn) { hlpBtn.disabled = false; hlpBtn.textContent = '⟳hlp'; }
+        insLog('Error: ' + r.error, 'error');
+        return;
+      }
+      insLog('✓ help.json — ' + r.itemCount + ' ítem(s)', 'success');
+      for (var ci = 0; ci < insState.clients.length; ci++) {
+        if (insState.clients[ci].folderId === client.folderId) {
+          insState.clients[ci].hasHelp = true;
+          client.hasHelp = true;
+          buildClientRowContent(rowEl, client, { hasConfig: true, hasHelp: true, pdfCount: insState.clients[ci].pdfCount || 0 });
+          break;
+        }
+      }
+    })
+    .catch(function(e) {
+      insState.busy = false;
+      if (hlpBtn) { hlpBtn.disabled = false; hlpBtn.textContent = '⟳hlp'; }
+      insLog('Error: ' + (e.message || e), 'error');
+    });
+}
+
 function insAddConfigButtons(row, client) {
-  row.querySelectorAll('.ins-row-btn, .ins-gen-btn').forEach(function(b) { b.remove(); });
-  var verBtn = document.createElement('button');
-  verBtn.className = 'ins-row-btn';
-  verBtn.textContent = 'Ver';
-  verBtn.title = 'Cargar invoices.json en consola';
-  verBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
-    row.classList.add('ins-selected');
-    insSetClient(client);
-    insRunLoadConfig(this);
-  });
-  var regBtn = document.createElement('button');
-  regBtn.className = 'ins-gen-btn';
-  regBtn.textContent = 'Reg.';
-  regBtn.title = 'Regenerar invoices.json';
-  regBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
-    row.classList.add('ins-selected');
-    insSetClient(client);
-    insRunGenerate(client, row);
-  });
-  row.appendChild(verBtn);
-  row.appendChild(regBtn);
+  // Legacy wrapper — kept for backward compat with insRunGenerate references
+  // Real rendering now done by buildClientRowContent
 }
 
 function renderInsClientList(clients, pending) {
@@ -3951,30 +4272,7 @@ function renderInsClientList(clients, pending) {
       row.className = 'ins-client-row';
       row.dataset.folderId = client.folderId;
       row.dataset.name = client.name;
-      if (pending) {
-        row.innerHTML = '<span class="ins-badge ins-badge-pending">?</span><span class="ins-client-name">' + escapeHtml(client.name) + '</span>';
-      } else {
-        var badgeHtml = client.hasConfig
-          ? '<span class="ins-badge ins-badge-ok">✓</span>'
-          : '<span class="ins-badge ins-badge-miss">✗</span>';
-        var pdfHtml = client.pdfCount > 0 ? '<span class="ins-pdf-count">' + client.pdfCount + 'p</span>' : '';
-        row.innerHTML = badgeHtml + '<span class="ins-client-name">' + escapeHtml(client.name) + '</span>' + pdfHtml;
-        if (!client.hasConfig) row.classList.add('ins-missing');
-        if (client.hasConfig) { insAddConfigButtons(row, client); }
-        else {
-          var genBtn = document.createElement('button');
-          genBtn.className = 'ins-gen-btn';
-          genBtn.textContent = 'Gen.';
-          genBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
-            row.classList.add('ins-selected');
-            insSetClient(client);
-            insRunGenerate(client, row);
-          });
-          row.appendChild(genBtn);
-        }
-      }
+      buildClientRowContent(row, client, pending ? null : { hasConfig: client.hasConfig, hasHelp: client.hasHelp, pdfCount: client.pdfCount || 0 });
       row.addEventListener('click', function(e) {
         if (e.target.tagName === 'BUTTON') return;
         document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
@@ -3994,38 +4292,8 @@ function updateClientRow(client, status) {
   var row = null;
   for (var i = 0; i < rows.length; i++) { if (rows[i].dataset.folderId === client.folderId) { row = rows[i]; break; } }
   if (!row) return;
-  var badge = row.querySelector('.ins-badge');
-  if (badge) {
-    if (status.hasConfig) { badge.className = 'ins-badge ins-badge-ok';  badge.textContent = '✓'; }
-    else                  { badge.className = 'ins-badge ins-badge-miss'; badge.textContent = '✗'; }
-  }
-  var existingPdf = row.querySelector('.ins-pdf-count');
-  if (existingPdf) existingPdf.remove();
-  if (status.pdfCount > 0) {
-    var pdfSpan = document.createElement('span');
-    pdfSpan.className = 'ins-pdf-count';
-    pdfSpan.textContent = status.pdfCount + 'p';
-    var firstBtn = row.querySelector('button');
-    if (firstBtn) row.insertBefore(pdfSpan, firstBtn); else row.appendChild(pdfSpan);
-  }
-  row.classList.toggle('ins-missing', !status.hasConfig);
-  row.querySelectorAll('.ins-row-btn, .ins-gen-btn').forEach(function(b) { b.remove(); });
-  if (status.hasConfig) {
-    insAddConfigButtons(row, client);
-  } else {
-    var genBtn = document.createElement('button');
-    genBtn.className = 'ins-gen-btn';
-    genBtn.textContent = 'Gen.';
-    genBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      document.querySelectorAll('.ins-client-row').forEach(function(r) { r.classList.remove('ins-selected'); });
-      row.classList.add('ins-selected');
-      insSetClient(client);
-      insRunGenerate(client, row);
-    });
-    row.appendChild(genBtn);
-    $('ins-btn-gen-all').classList.remove('hidden');
-  }
+  buildClientRowContent(row, client, status);
+  if (!status.hasConfig || !status.hasHelp) $('ins-btn-gen-all').classList.remove('hidden');
 }
 
 function insRunGenerate(client, rowEl) {
@@ -4107,21 +4375,47 @@ function insRunGenerate(client, rowEl) {
 }
 
 function insRunGenAll() {
-  var missing = insState.clients.filter(function(c) { return !c.hasConfig; });
+  var missingInv  = insState.clients.filter(function(c) { return !c.hasConfig; });
+  var missingHelp = insState.clients.filter(function(c) { return c.hasConfig && !c.hasHelp; });
+  var missing     = missingInv.concat(missingHelp);
   if (missing.length === 0) { insLog('Todos tienen config.', 'success'); return; }
   if (insState.busy) { insLog('Operación en curso, espera…', 'warn'); return; }
   var CONCURRENCY = 6;
   var total = missing.length, idx = 0, completed = 0;
   insState.busy = true;
   $('ins-btn-gen-all').disabled = true;
-  insLog('Generando config para ' + total + ' cliente(s) (hasta ' + CONCURRENCY + ' en paralelo)…', 'info');
+  if (missingInv.length && missingHelp.length) {
+    insLog('Generando: ' + missingInv.length + ' sin invoices, ' + missingHelp.length + ' sin help (hasta ' + CONCURRENCY + ' en paralelo)…', 'info');
+  } else if (missingInv.length) {
+    insLog('Generando config para ' + missingInv.length + ' cliente(s) (hasta ' + CONCURRENCY + ' en paralelo)…', 'info');
+  } else {
+    insLog('Generando help.json para ' + missingHelp.length + ' cliente(s) (hasta ' + CONCURRENCY + ' en paralelo)…', 'info');
+  }
 
   function processClient(client) {
     var rows = document.querySelectorAll('.ins-client-row');
     var targetRow = null;
     for (var i = 0; i < rows.length; i++) { if (rows[i].dataset.folderId === client.folderId) { targetRow = rows[i]; break; } }
-    var genBtn = targetRow ? targetRow.querySelector('.ins-gen-btn') : null;
-    if (genBtn) { genBtn.disabled = true; genBtn.textContent = '…'; }
+    var regenBtn = targetRow ? targetRow.querySelector('.ins-regen-btn') : null;
+    if (regenBtn) { regenBtn.disabled = true; }
+    // If this client already has invoices — only need to generate help.json
+    if (client.hasConfig && !client.hasHelp) {
+      return gasGet({ action: 'generateClientHelp', adminCode: state.adminCode, folderId: client.folderId }, 30000)
+        .then(function(r) {
+          if (!r.success) { insLog('  ' + client.name + ': error help — ' + r.error, 'error'); return; }
+          insLog('  ✓ ' + client.name + ' — help.json (' + r.itemCount + ' ítem(s))', 'success');
+          for (var ci = 0; ci < insState.clients.length; ci++) {
+            if (insState.clients[ci].folderId === client.folderId) {
+              insState.clients[ci].hasHelp = true;
+              client.hasHelp = true;
+              if (targetRow) buildClientRowContent(targetRow, client, { hasConfig: true, hasHelp: true, pdfCount: insState.clients[ci].pdfCount || 0 });
+              break;
+            }
+          }
+        })
+        .catch(function(e) { insLog('  ' + client.name + ': error — ' + (e.message || e), 'error'); });
+    }
+    // Full generation: parse PDFs then save (saveClientConfig now also generates help.json server-side)
     return gasGet({ action: 'adminGetFiles', adminCode: state.adminCode, folderId: client.folderId }, 30000)
       .then(function(r) {
         if (!r.success) throw new Error(r.error);
@@ -4141,21 +4435,20 @@ function insRunGenAll() {
             .then(function(saveR) {
               if (!saveR.success) { insLog('  ' + client.name + ': error al guardar — ' + saveR.error, 'error'); return; }
               insLog('  ✓ ' + client.name + ' — ' + saveR.invoiceCount + ' factura(s)', 'success');
-              if (targetRow) {
-                var badge = targetRow.querySelector('.ins-badge');
-                if (badge) { badge.className = 'ins-badge ins-badge-ok'; badge.textContent = '✓'; }
-                if (genBtn) genBtn.remove();
-                insAddConfigButtons(targetRow, client);
-              }
               for (var ci = 0; ci < insState.clients.length; ci++) {
-                if (insState.clients[ci].folderId === client.folderId) { insState.clients[ci].hasConfig = true; break; }
+                if (insState.clients[ci].folderId === client.folderId) {
+                  insState.clients[ci].hasConfig = true;
+                  insState.clients[ci].hasHelp   = true;
+                  client.hasConfig = true; client.hasHelp = true;
+                  if (targetRow) buildClientRowContent(targetRow, client, { hasConfig: true, hasHelp: true, pdfCount: insState.clients[ci].pdfCount || 0 });
+                  break;
+                }
               }
             });
         });
       })
       .catch(function(e) {
         insLog('  ' + client.name + ': error — ' + (e.message || e), 'error');
-        if (genBtn) { genBtn.disabled = false; genBtn.textContent = 'Gen.'; }
       });
   }
 
@@ -4169,7 +4462,8 @@ function insRunGenAll() {
         insState.busy = false;
         $('ins-btn-gen-all').disabled = false;
         insLog('Proceso completado (' + total + ' cliente(s)).', 'success');
-        if (!insState.clients.filter(function(c) { return !c.hasConfig; }).length) $('ins-btn-gen-all').classList.add('hidden');
+        var stillMissing = insState.clients.filter(function(c) { return !c.hasConfig || !c.hasHelp; }).length;
+        if (!stillMissing) $('ins-btn-gen-all').classList.add('hidden');
       } else {
         startNext();
       }
