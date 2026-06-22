@@ -1455,6 +1455,22 @@
     }
     .btn-inv-preview:hover { background: #eef0f8; border-color: var(--blue); }
     .btn-preview { font-size: 14px; }
+    .btn-inv-open {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--blue);
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.12s, border-color 0.12s;
+      margin-left: 4px;
+    }
+    .btn-inv-open:hover { background: #eef0f8; border-color: var(--blue); }
 
     .dash-bank {
       border-top: 1px solid var(--border);
@@ -1544,10 +1560,20 @@
         order: 4;
         margin-left: auto;
         justify-content: flex-end;
-        gap: 4px;
+        gap: 6px;
       }
       .invoice-table tr.inv-items-row    { display: block; }
       .invoice-table tr.inv-items-row td { display: block; }
+
+      /* Touch-optimized action buttons */
+      .btn-inv-preview { display: none !important; }
+      .btn-inv-open    { display: inline-flex !important; margin-left: 0; }
+      .inv-actions .btn-download,
+      .inv-actions .btn-inv-open,
+      .inv-actions .btn-expand {
+        width: 40px;
+        height: 40px;
+      }
     }
 
     canvas { max-width: 100%; }
@@ -1732,6 +1758,7 @@
       .invoice-table tbody tr.has-file:hover { background: #363638; }
       .dash-bank { background: var(--bg); }
       .btn-inv-preview:hover { background: rgba(69, 72, 255, 0.15); }
+      .btn-inv-open:hover    { background: rgba(69, 72, 255, 0.15); }
       .dash-tab.active { background: var(--white); }
       .btn-expand:hover { background: #2c2c2e; border-color: var(--blue); }
       .btn-expand.open  { background: #2c2c2e; }
@@ -3929,6 +3956,11 @@ function rebuildDashTable() {
         btnPrev.title       = 'Previsualizar PDF';
         btnPrev.textContent = '🔍';
 
+        var btnOpen = document.createElement('button');
+        btnOpen.className = 'btn-inv-open';
+        btnOpen.title     = 'Abrir PDF';
+        btnOpen.innerHTML = SVG_EXTERNAL;
+
         var btnDl = document.createElement('button');
         btnDl.className   = 'btn-download';
         btnDl.title       = 'Descargar';
@@ -3937,6 +3969,34 @@ function rebuildDashTable() {
         btnPrev.addEventListener('click', function (e) {
           e.stopPropagation();
           openPdfDrawer(inv.fileId, inv.mimeType, makePdfLabel(inv));
+        });
+
+        btnOpen.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (btnOpen.disabled) return;
+          btnOpen.disabled  = true;
+          btnOpen.textContent = '…';
+          gasGet({ action: 'download', fileId: inv.fileId, mimeType: inv.mimeType, fileName: inv.folio })
+            .then(function (result) {
+              btnOpen.disabled  = false;
+              btnOpen.innerHTML = SVG_EXTERNAL;
+              if (!result) return;
+              if (result.type === 'url') {
+                window.open(result.url, '_blank');
+              } else if (result.type === 'base64') {
+                var binary = atob(result.data);
+                var bytes  = new Uint8Array(binary.length);
+                for (var bi = 0; bi < binary.length; bi++) bytes[bi] = binary.charCodeAt(bi);
+                var blob   = new Blob([bytes], { type: inv.mimeType || 'application/pdf' });
+                var blobUrl = URL.createObjectURL(blob);
+                window.open(blobUrl, '_blank');
+                setTimeout(function() { URL.revokeObjectURL(blobUrl); }, 60000);
+              }
+            })
+            .catch(function () {
+              btnOpen.disabled  = false;
+              btnOpen.innerHTML = SVG_EXTERNAL;
+            });
         });
 
         btnDl.addEventListener('click', function (e) {
@@ -3962,11 +4022,12 @@ function rebuildDashTable() {
         });
 
         tr.addEventListener('click', function (e) {
-          if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview') || e.target.closest('.btn-expand')) return;
+          if (e.target.closest('.btn-download') || e.target.closest('.btn-inv-preview') || e.target.closest('.btn-inv-open') || e.target.closest('.btn-expand')) return;
           openPdfDrawer(inv.fileId, inv.mimeType, makePdfLabel(inv));
         });
 
         tdAct.appendChild(btnPrev);
+        tdAct.appendChild(btnOpen);
         tdAct.appendChild(btnDl);
       }
 
