@@ -1507,13 +1507,18 @@
     .bank-pop-info { flex: 1; min-width: 0; }
     .bank-pop-key { font-size: 10px; color: var(--muted); margin-bottom: 1px; }
     .bank-pop-val { font-size: 13px; font-weight: 500; color: var(--text); }
-    .bank-copy-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); padding: 5px; border-radius: 4px; flex-shrink: 0;
-      transition: background 0.12s, color 0.12s; line-height: 1;
+    .bank-pop-footer {
+      padding: 10px 16px; border-top: 1px solid var(--border);
     }
-    .bank-copy-btn:hover { background: var(--bg); color: var(--navy); }
-    .bank-copy-ok { color: #22c55e; font-weight: 700; font-size: 13px; }
+    .bank-copy-all-btn {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 12px; font-size: 12px; font-weight: 600; color: var(--navy);
+      cursor: pointer; font-family: inherit; transition: background 0.12s, color 0.12s;
+      justify-content: center;
+    }
+    .bank-copy-all-btn:hover { background: var(--navy); color: #fff; }
+    .bank-copy-all-btn--ok   { background: #f0fdf4 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
 
     /* ── Mobile: narrow-screen overrides ─────────────────────────────── */
     @media (max-width: 599px) {
@@ -1770,9 +1775,10 @@
       .ins-client-row.ins-selected { background: rgba(69, 72, 255, 0.18); }
       .ins-client-row:hover:not(.ins-selected) { background: rgba(255, 255, 255, 0.05); }
 
-      #bank-popover           { background: #2c2c2e; }
-      .bank-info-btn:hover    { background: rgba(255,255,255,0.08); }
-      .bank-copy-btn:hover    { background: #3a3a3c; color: var(--text); }
+      #bank-popover              { background: #2c2c2e; }
+      .bank-info-btn:hover       { background: rgba(255,255,255,0.08); }
+      .bank-copy-all-btn         { background: #3a3a3c; border-color: #555; color: var(--text); }
+      .bank-copy-all-btn:hover   { background: #fff; color: var(--navy); }
     }
 
     /* ── Feedback FAB ─────────────────────────────────────────────────────── */
@@ -4305,7 +4311,7 @@ function renderDashboard(data) {
         '</div>' +
         '<div style="display:flex;align-items:center;gap:8px;">' +
           (data.configData && data.configData.help && data.configData.help.length
-            ? '<button class="btn-ayuda" id="dash-btn-ayuda">❓ Ayuda</button>'
+            ? '<button class="btn-ayuda" id="dash-btn-ayuda">¿Qué incluye?</button>'
             : '') +
           '<button class="btn btn-yellow" id="dash-btn-download-all" style="font-size:13px;height:34px;padding:0 14px;">' + SVG_DOWNLOAD + ' Descargar todo (.zip)</button>' +
         '</div>' +
@@ -5701,6 +5707,7 @@ function openBankingPopover(btn) {
     ['Correo',       btn.getAttribute('data-correo')]
   ];
   var html = '';
+  var copyLines = [];
   for (var i = 0; i < fields.length; i++) {
     if (!fields[i][1]) continue;
     html +=
@@ -5709,16 +5716,20 @@ function openBankingPopover(btn) {
           '<div class="bank-pop-key">'  + escapeHtml(fields[i][0]) + '</div>' +
           '<div class="bank-pop-val">'  + escapeHtml(fields[i][1]) + '</div>' +
         '</div>' +
-        '<button class="bank-copy-btn" title="Copiar"' +
-          ' data-val="' + escapeHtml(fields[i][1]) + '"' +
-          ' onclick="copyBankField(this)">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
-            '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
-          '</svg>' +
-        '</button>' +
       '</div>';
+    copyLines.push(fields[i][0] + ': ' + fields[i][1]);
   }
+  html +=
+    '<div class="bank-pop-footer">' +
+      '<button class="bank-copy-all-btn" id="bank-copy-all-btn" onclick="copyAllBankFields(this)">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<rect x="9" y="9" width="13" height="13" rx="2"/>' +
+          '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>' +
+        '</svg>' +
+        'Copiar datos' +
+      '</button>' +
+    '</div>';
+  pop.setAttribute('data-copy-text', copyLines.join('\n'));
   body.innerHTML = html;
   pop.classList.remove('hidden');
 
@@ -5736,13 +5747,15 @@ function closeBankingPopover() {
   if (p) p.classList.add('hidden');
 }
 
-function copyBankField(btn) {
-  var val = btn.getAttribute('data-val');
-  if (!navigator.clipboard) return;
+function copyAllBankFields(btn) {
+  var pop = $('bank-popover');
+  var val = pop ? pop.getAttribute('data-copy-text') : '';
+  if (!val || !navigator.clipboard) return;
   navigator.clipboard.writeText(val).then(function() {
     var orig = btn.innerHTML;
-    btn.innerHTML = '<span class="bank-copy-ok">✓</span>';
-    setTimeout(function() { btn.innerHTML = orig; }, 1500);
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> ¡Copiado!';
+    btn.classList.add('bank-copy-all-btn--ok');
+    setTimeout(function() { btn.innerHTML = orig; btn.classList.remove('bank-copy-all-btn--ok'); }, 1800);
   });
 }
 
